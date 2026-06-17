@@ -47,14 +47,40 @@ void print_menu(Menu printed_MENU);
 
 //=======================================================
 //                     MENU CREATION 
+//            TODO: crafting & encounter menu
 //=======================================================
 
 Menu main_menu = {
     "main menu",
     { {"0. LEAVE"}, {"1. CRAFT"}, {"2. MINE"}, {"3. FIGHT"}, {"4. INVENTORY"}, {"5. HEAL"}, {"6. BASE"} },
     7,
-    0
+    0 //pos
 };
+Menu mining_menu = {
+    "mining menu",
+    { {"0. BACK"}, {"1. MINING WOOD"}, {"2. MINING IRON"}, {"3. MINING DIAMONDS"} },
+    4,
+    0 //pos
+};
+Menu fighting_menu = {
+    "fighting menu",
+    { {"1. BOSS FIGHT"}, {"2. EXPLORE (plains)"}, {"3. EXPLORE (caves)(WIP)"}, {"3. LEVEL - 3 Tank"} },
+    4,
+    0 //pos
+};
+Menu boss_menu = {
+    "BOSS menu",
+    { {"0. BACK"}, {"1. LEVEL - 1 Samurai"}, {"2. LEVEL - 2 Mage"}, {"3. LEVEL - 3 Tank"}, {"4. LEVEL - 4 Assasin"}, {"5. RANDOM LEVEL"} },
+    6,
+    0 //pos
+};
+Menu base_menu = {
+    "base menu",
+    { {"0. BACK"}, {"1. VILLAGERS (WIP)"}, {"2. STORAGE"}, {"3. PETS"} },
+    4,
+    0 //pos
+};
+
 
 //=======================================================
 //                        MAIN
