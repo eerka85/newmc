@@ -3,33 +3,103 @@
 #include <string.h>
 #include <windows.h>
 #include <conio.h>
+#include <time.h>
 
 #include "art.h"
 
+#define NO_OF_CREATED_CHOICES 15
+
+//=======================================================
+//                    TYPEDEF SHIT
+//=======================================================
 typedef enum {
-    STATE_MENU
-} State;
+    STATE_MENU,
+    STATE_CRAFT,
+    STATE_FIGHT,
+    STATE_INVENTORY,
+    STATE_HEAL,
+    STATE_BASE,
+    STATE_LEAVE
+} main_State;
+
+typedef struct {
+    const char *label;
+} Choice;
+
+typedef struct {
+    const char *main_label;
+    Choice     choices[NO_OF_CREATED_CHOICES];
+    int        total;
+    int        pos_menu;
+} Menu;
+
+//=======================================================
+//                 FUNCTIONS DECLARATION
+//=======================================================
 
 int kets();
 void clean_buffer();
 int input_int(int min, int max);
 int input_string(char inputed_str[], int inputed_str_size,char outputed_text[]);
-void del_screen_cursor();
+void set_cursor_to_zero();
 void clear_screen_CONTINUE();
+void print_menu(Menu printed_MENU);
 
+//=======================================================
+//                     MENU CREATION 
+//=======================================================
+
+Menu main_menu = {
+    "main menu",
+    { {"0. LEAVE"}, {"1. CRAFT"}, {"2. MINE"}, {"3. FIGHT"}, {"4. INVENTORY"}, {"5. HEAL"}, {"6. BASE"} },
+    7,
+    0
+};
+
+//=======================================================
+//                        MAIN
+//=======================================================
 
 int main(){
+    //###################
+    //      CONSOLE
+    //###################
     HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);//ai schovani kurzoru
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(out, &cursorInfo);
     cursorInfo.bVisible = FALSE; 
     SetConsoleCursorInfo(out, &cursorInfo);
-    
 
+    system("cls");
+
+    srand(time(NULL));
+	SetConsoleOutputCP(65001); //nastaveni UTF-8 pro windows, aby se zobrazovaly tyhle hezký kostičky :D (holy shit tohle napsalo vs za me)
+    
+    //###################
+    //       TEST
+    //###################
+    print_menu(main_menu);
+    getchar();
+    main_menu.pos_menu++;
+    print_menu(main_menu);
+    getchar();
+    main_menu.pos_menu++;
+    print_menu(main_menu);
+    getchar();
+    main_menu.pos_menu++;
+    print_menu(main_menu);
+    getchar();
+    main_menu.pos_menu++;
+    print_menu(main_menu);
 
 
     return 0;
 }
+
+//=======================================================
+//                      FUNCTIONS 
+//=======================================================
+
 
 void clean_buffer(){
 	int c;
@@ -79,7 +149,7 @@ int input_string(char inputed_str[], int inputed_str_size, char outputed_text[])
     return 0;
 }
 
-void del_screen_cursor(){
+void set_cursor_to_zero(){
 	COORD cursorPosition;// ts is highkey ai
     cursorPosition.X = 0;
     cursorPosition.Y = 0;
@@ -89,4 +159,13 @@ void clear_screen_CONTINUE(){
 	printf(BLUE "\n CONTINUE? (press enter)" RESET);
 	getchar();
 	system("cls");
+}
+
+void print_menu(Menu printed_MENU){
+    printf(" ======%s======\n", printed_MENU.main_label);
+    for(int i = 0; i < printed_MENU.total; i++){
+        if(i == printed_MENU.pos_menu){printf(RED " >%s\n" RESET, printed_MENU.choices[i].label);}
+        else{printf("  %s\n", printed_MENU.choices[i].label);}
+    }
+    set_cursor_to_zero();
 }
