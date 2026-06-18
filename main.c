@@ -21,11 +21,19 @@ typedef enum {
         STATE_DIAMONDS,
     STATE_FIGHT,
         STATE_BOSS,
+            STATE_SAMURAI,
+            STATE_MAGE,
+            STATE_TANK,
+            STATE_ASSASSIN,
+            STATE_RANDOM_BOSS,
         STATE_EXPLORE_PLAINS,
         STATE_EXPLORE_CAVES,
     STATE_INVENTORY,
     STATE_HEAL,
     STATE_BASE,
+        STATE_VILLAGERS,
+        STATE_STORAGE,
+        STATE_PETS,
     STATE_LEAVE,
     STATE_ERR
 } State;
@@ -47,9 +55,13 @@ typedef struct {
 
 int kets();
 int move_in_menu(Menu * menu);
+
 State handle_MAIN_menu();
 State handle_mine_menu();
 State handle_fighting_menu();
+    State handle_boss_menu();
+State handle_base_menu();
+
 void clean_buffer();
 int input_int(int min, int max);
 int input_string(char inputed_str[], int inputed_str_size,char outputed_text[]);
@@ -169,11 +181,38 @@ int main(){
                 current_status = handle_fighting_menu();
             break;
                 case STATE_BOSS:
-                    system("cls");
-                    printf("BOSS\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_FIGHT;
+                    current_status = handle_boss_menu();
                 break;
+                    case STATE_SAMURAI:
+                        system("cls");
+                        printf("SAMURAI\n");
+                        clear_screen_CONTINUE();
+                        current_status = STATE_BOSS;
+                    break;
+                    case STATE_MAGE:
+                        system("cls");
+                        printf("MAGE\n");
+                        clear_screen_CONTINUE();
+                        current_status = STATE_BOSS;
+                    break;
+                    case STATE_TANK:
+                        system("cls");
+                        printf("TANK\n");
+                        clear_screen_CONTINUE();
+                        current_status = STATE_BOSS;
+                    break;
+                    case STATE_ASSASSIN:
+                        system("cls");
+                        printf("ASSASSIN\n");
+                        clear_screen_CONTINUE();
+                        current_status = STATE_BOSS;
+                    break;
+                    case STATE_RANDOM_BOSS:
+                        system("cls");
+                        printf("RANDOM BOSS\n");
+                        clear_screen_CONTINUE();
+                        current_status = STATE_BOSS;
+                    break;
                 case STATE_EXPLORE_PLAINS:
                     system("cls");
                     printf("EXPLORE PLAINS\n");
@@ -182,7 +221,7 @@ int main(){
                 break;
                 case STATE_EXPLORE_CAVES:
                     system("cls");
-                    printf("EXPLORE CAVES\n");
+                    printf("EXPLORE CAVES IS WORK IN PROGRESS\n");
                     clear_screen_CONTINUE();
                     current_status = STATE_FIGHT;
                 break;
@@ -202,12 +241,27 @@ int main(){
             break;
 
             case STATE_BASE:
-                system("cls");
-                printf("BASE\n");
-                clear_screen_CONTINUE();
-                current_status = STATE_MENU;
+                current_status = handle_base_menu();
             break;
-
+                case STATE_VILLAGERS:
+                    system("cls");
+                    printf("VILLAGERS IN PROGRESS\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_BASE;
+                break;
+                case STATE_STORAGE:
+                    system("cls");
+                    printf("STORAGE\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_BASE;
+                break;
+                case STATE_PETS:
+                    system("cls");
+                    printf("PETS\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_BASE;
+                break;
+    
             case STATE_LEAVE:
                 system("cls");
                 printf("leaving\n");
@@ -402,6 +456,76 @@ State handle_fighting_menu(){
     }
     else{
         return STATE_FIGHT;
+    }
+}
+
+State handle_boss_menu(){
+    print_menu(boss_menu);
+    if(move_in_menu(&boss_menu)){
+        system("cls");
+        switch(boss_menu.pos_menu){
+            case 0:
+                return STATE_FIGHT;
+            break;
+
+            case 1:
+                return STATE_SAMURAI;
+            break;
+
+            case 2:
+                return STATE_MAGE;
+            break;
+
+            case 3:
+                return STATE_TANK;
+            break;
+
+            case 4:
+                return STATE_ASSASSIN;
+            break;
+
+            case 5:
+                return STATE_RANDOM_BOSS;
+            break;
+
+            default:
+                return STATE_ERR;
+            break;
+        }
+    }
+    else{
+        return STATE_BOSS;
+    }
+}
+
+State handle_base_menu(){
+    print_menu(base_menu);
+    if(move_in_menu(&base_menu)){
+        system("cls");
+        switch(base_menu.pos_menu){
+            case 0:
+                return STATE_MENU;
+            break;
+
+            case 1:
+                return STATE_VILLAGERS;
+            break;
+
+            case 2:
+                return STATE_STORAGE;
+            break;
+
+            case 3:
+                return STATE_PETS;
+            break;
+
+            default:
+                return STATE_ERR;
+            break;
+        }
+    }
+    else{
+        return STATE_BASE;
     }
 }
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
