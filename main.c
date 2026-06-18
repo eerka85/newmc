@@ -136,6 +136,27 @@ int main(){
                 current_status = handle_mine_menu();
             break;
 
+                case STATE_WOOD:
+                    system("cls");
+                    printf("WOOD\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_MINE;
+                break;
+
+                case STATE_IRON:
+                    system("cls");
+                    printf("IRON\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_MINE;
+                break;
+
+                case STATE_DIAMONDS:
+                    system("cls");
+                    printf("DIAMONDS\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_MINE;
+                break;
+
             case STATE_FIGHT:
                 system("cls");
                 printf("FIGHT\n");
@@ -304,16 +325,20 @@ State handle_mine_menu(){
     print_menu(mine_menu);
     if(move_in_menu(&mine_menu)){
         system("cls");
-        switch(main_menu.pos_menu){
+        switch(mine_menu.pos_menu){
             case 0:
                 return STATE_MENU;
             break;
 
             case 1:
-                return STATE_IRON;
+                return STATE_WOOD;
             break;
 
             case 2:
+                return STATE_IRON;
+            break;
+
+            case 3:
                 return STATE_DIAMONDS;
             break;
 
