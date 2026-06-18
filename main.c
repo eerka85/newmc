@@ -260,6 +260,7 @@ int move_in_menu(Menu * menu){
 State handle_MAIN_menu(){ //prints then checks for input using move in menu
     print_menu(main_menu); 
     if(move_in_menu(&main_menu)){
+        system("cls");
         switch(main_menu.pos_menu){
             case 0:
                 return STATE_LEAVE;
@@ -293,7 +294,6 @@ State handle_MAIN_menu(){ //prints then checks for input using move in menu
                 return STATE_ERR;
             break;
         }
-        system("cls");
     }
     else{
         return STATE_MENU;
@@ -303,6 +303,7 @@ State handle_MAIN_menu(){ //prints then checks for input using move in menu
 State handle_mine_menu(){
     print_menu(mine_menu);
     if(move_in_menu(&mine_menu)){
+        system("cls");
         switch(main_menu.pos_menu){
             case 0:
                 return STATE_MENU;
@@ -320,7 +321,6 @@ State handle_mine_menu(){
                 return STATE_ERR;
             break;
         }
-        system("cls");
     }
     else{
         return STATE_MINE;
