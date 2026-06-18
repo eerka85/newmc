@@ -16,10 +16,13 @@ typedef enum {
     STATE_MENU,
     STATE_CRAFT,
     STATE_MINE,
-    STATE_WOOD,
-    STATE_IRON,
-    STATE_DIAMONDS,
+        STATE_WOOD,
+        STATE_IRON,
+        STATE_DIAMONDS,
     STATE_FIGHT,
+        STATE_BOSS,
+        STATE_EXPLORE_PLAINS,
+        STATE_EXPLORE_CAVES,
     STATE_INVENTORY,
     STATE_HEAL,
     STATE_BASE,
@@ -46,6 +49,7 @@ int kets();
 int move_in_menu(Menu * menu);
 State handle_MAIN_menu();
 State handle_mine_menu();
+State handle_fighting_menu();
 void clean_buffer();
 int input_int(int min, int max);
 int input_string(char inputed_str[], int inputed_str_size,char outputed_text[]);
@@ -132,6 +136,8 @@ int main(){
                 current_status = STATE_MENU;
             break;
 
+            //   MINE      MINE      MINE      MINE      MINE      MINE   
+
             case STATE_MINE:
                 current_status = handle_mine_menu();
             break;
@@ -156,13 +162,30 @@ int main(){
                     clear_screen_CONTINUE();
                     current_status = STATE_MINE;
                 break;
+            
+            //   FIGHT      FIGHT      FIGHT      FIGHT      FIGHT      FIGHT   
 
             case STATE_FIGHT:
-                system("cls");
-                printf("FIGHT\n");
-                clear_screen_CONTINUE();
-                current_status = STATE_MENU;
+                current_status = handle_fighting_menu();
             break;
+                case STATE_BOSS:
+                    system("cls");
+                    printf("BOSS\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_FIGHT;
+                break;
+                case STATE_EXPLORE_PLAINS:
+                    system("cls");
+                    printf("EXPLORE PLAINS\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_FIGHT;
+                break;
+                case STATE_EXPLORE_CAVES:
+                    system("cls");
+                    printf("EXPLORE CAVES\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_FIGHT;
+                break;
 
             case STATE_INVENTORY:
                 system("cls");
@@ -349,6 +372,36 @@ State handle_mine_menu(){
     }
     else{
         return STATE_MINE;
+    }
+}
+State handle_fighting_menu(){
+    print_menu(fighting_menu);
+    if(move_in_menu(&fighting_menu)){
+        system("cls");
+        switch(fighting_menu.pos_menu){
+            case 0:
+                return STATE_MENU;
+            break;
+
+            case 1:
+                return STATE_BOSS;
+            break;
+
+            case 2:
+                return STATE_EXPLORE_PLAINS;
+            break;
+
+            case 3:
+                return STATE_EXPLORE_CAVES;
+            break;
+
+            default:
+                return STATE_ERR;
+            break;
+        }
+    }
+    else{
+        return STATE_FIGHT;
     }
 }
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
