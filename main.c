@@ -15,12 +15,17 @@
 typedef enum {
     STATE_MENU,
     STATE_CRAFT,
+    STATE_MINE,
+    STATE_WOOD,
+    STATE_IRON,
+    STATE_DIAMONDS,
     STATE_FIGHT,
     STATE_INVENTORY,
     STATE_HEAL,
     STATE_BASE,
-    STATE_LEAVE
-} main_State;
+    STATE_LEAVE,
+    STATE_ERR
+} State;
 
 typedef struct {
     const char *label;
@@ -38,6 +43,9 @@ typedef struct {
 //=======================================================
 
 int kets();
+int move_in_menu(Menu * menu);
+State handle_MAIN_menu();
+State handle_mine_menu();
 void clean_buffer();
 int input_int(int min, int max);
 int input_string(char inputed_str[], int inputed_str_size,char outputed_text[]);
@@ -56,7 +64,7 @@ Menu main_menu = {
     7,
     0 //pos
 };
-Menu mining_menu = {
+Menu mine_menu = {
     "mining menu",
     { {"0. BACK"}, {"1. MINING WOOD"}, {"2. MINING IRON"}, {"3. MINING DIAMONDS"} },
     4,
@@ -64,7 +72,7 @@ Menu mining_menu = {
 };
 Menu fighting_menu = {
     "fighting menu",
-    { {"1. BOSS FIGHT"}, {"2. EXPLORE (plains)"}, {"3. EXPLORE (caves)(WIP)"}, {"3. LEVEL - 3 Tank"} },
+    { {"0. BACK"}, {"1. BOSS FIGHT"}, {"2. EXPLORE (plains)"}, {"3. EXPLORE (caves)(WIP)"}},
     4,
     0 //pos
 };
@@ -102,21 +110,79 @@ int main(){
 	SetConsoleOutputCP(65001); //nastaveni UTF-8 pro windows, aby se zobrazovaly tyhle hezký kostičky :D (holy shit tohle napsalo vs za me)
     
     //###################
-    //       TEST
+    //     VARIABLES
     //###################
-    print_menu(main_menu);
-    getchar();
-    main_menu.pos_menu++;
-    print_menu(main_menu);
-    getchar();
-    main_menu.pos_menu++;
-    print_menu(main_menu);
-    getchar();
-    main_menu.pos_menu++;
-    print_menu(main_menu);
-    getchar();
-    main_menu.pos_menu++;
-    print_menu(main_menu);
+    State current_status = STATE_MENU;
+
+
+    //###################
+    // MAIN CYCLE START
+    //###################
+
+    while(current_status != STATE_LEAVE){
+        switch(current_status){
+            case STATE_MENU:
+                current_status = handle_MAIN_menu();
+            break;
+
+            case STATE_CRAFT:
+                system("cls");
+                printf("CRAFT\n");
+                clear_screen_CONTINUE();
+                current_status = STATE_MENU;
+            break;
+
+            case STATE_MINE:
+                current_status = handle_mine_menu();
+            break;
+
+            case STATE_FIGHT:
+                system("cls");
+                printf("FIGHT\n");
+                clear_screen_CONTINUE();
+                current_status = STATE_MENU;
+            break;
+
+            case STATE_INVENTORY:
+                system("cls");
+                printf("INVENTORY\n");
+                clear_screen_CONTINUE();
+                current_status = STATE_MENU;
+            break;
+
+            case STATE_HEAL:
+                system("cls");
+                printf("HEAL\n");
+                clear_screen_CONTINUE();
+                current_status = STATE_MENU;
+            break;
+
+            case STATE_BASE:
+                system("cls");
+                printf("BASE\n");
+                clear_screen_CONTINUE();
+                current_status = STATE_MENU;
+            break;
+
+            case STATE_LEAVE:
+                system("cls");
+                printf("leaving\n");
+                clear_screen_CONTINUE();
+            break;
+
+            case STATE_ERR:
+                system("cls");
+                printf("ERROR??? idk\n");
+                clear_screen_CONTINUE();
+            break;
+            
+        }
+    }
+    
+    //###################
+    //   MAIN CYCLE END
+    //###################
+    system("cls");
 
 
     return 0;
@@ -152,9 +218,118 @@ int kets(){
     int inputed_key = _getch();
     if(inputed_key == 0 || inputed_key == 224){
         inputed_key = _getch();
+        inputed_key += 1000;
     }
     return inputed_key;
 }
+
+int move_in_menu(Menu * menu){
+    int input = kets();
+    switch(input){
+        case 1080:
+            if(menu->pos_menu == menu->total -1){
+                menu->pos_menu = 0;
+            }
+            else{
+                menu->pos_menu++;
+            }
+        break;
+        case 1072:
+            if(menu->pos_menu == 0){
+                menu->pos_menu = menu->total -1;
+            }
+            else{
+                menu->pos_menu--;
+            }
+        break;
+        case 13:
+            return 1;
+        break;
+
+        default:
+            return 0;
+        break;
+    }
+    return 0;
+}
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//               menu HANDLERS
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+State handle_MAIN_menu(){ //prints then checks for input using move in menu
+    print_menu(main_menu); 
+    if(move_in_menu(&main_menu)){
+        switch(main_menu.pos_menu){
+            case 0:
+                return STATE_LEAVE;
+            break;
+
+            case 1:
+                return STATE_CRAFT;
+            break;
+
+            case 2:
+                return STATE_MINE;
+            break;
+
+            case 3:
+                return STATE_FIGHT;
+            break;
+
+            case 4:
+                return STATE_INVENTORY;
+            break;
+
+            case 5:
+                return STATE_HEAL;
+            break;
+
+            case 6:
+                return STATE_BASE;
+            break;
+
+            default:
+                return STATE_ERR;
+            break;
+        }
+        system("cls");
+    }
+    else{
+        return STATE_MENU;
+    }
+}
+
+State handle_mine_menu(){
+    print_menu(mine_menu);
+    if(move_in_menu(&mine_menu)){
+        switch(main_menu.pos_menu){
+            case 0:
+                return STATE_MENU;
+            break;
+
+            case 1:
+                return STATE_IRON;
+            break;
+
+            case 2:
+                return STATE_DIAMONDS;
+            break;
+
+            default:
+                return STATE_ERR;
+            break;
+        }
+        system("cls");
+    }
+    else{
+        return STATE_MINE;
+    }
+}
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//               BASIC FUNCTIONS
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 int input_string(char inputed_str[], int inputed_str_size, char outputed_text[]){
     while(1){
