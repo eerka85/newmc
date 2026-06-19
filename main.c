@@ -107,6 +107,10 @@ void print_menu(Menu printed_MENU);
 void print_craft_menu(Menu printed_MENU);
 void print_inventory();
 
+void wood_mine();
+void iron_mine();
+void diamond_mine();
+
 //=======================================================
 //                     MENU CREATION 
 //            TODO: crafting & encounter menu
@@ -150,29 +154,29 @@ Menu base_menu = {
 };
 
 Resources materials = {
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+    0, //no_of_TANKs_defeated
+    10, //player_hp_fighting
+    0, //bones
+    0, //leather
+    0, //wool
+    0, //wood
+    0, //iron
+    0, //diamonds
+    0, //i_helmet
+    0, //d_helmet
+    0, //i_chestplate
+    0, //d_chestplate
+    0, //i_leggings
+    0, //d_leggings
+    0, //i_boots
+    0,  //d_boots
+    0, //d_sword
+    0, //i_sword
+    0, //i_pickaxe
+    0, //d_pickaxe
+    0, //i_axe
+    0, //d_axe
+    0  //pet_doggos
 };
 
 
@@ -274,21 +278,21 @@ int main(){
 
                 case STATE_WOOD:
                     system("cls");
-                    printf("WOOD\n");
+                    wood_mine();
                     clear_screen_CONTINUE();
                     current_status = STATE_MINE;
                 break;
 
                 case STATE_IRON:
                     system("cls");
-                    printf("IRON\n");
+                    iron_mine();
                     clear_screen_CONTINUE();
                     current_status = STATE_MINE;
                 break;
 
                 case STATE_DIAMONDS:
                     system("cls");
-                    printf("DIAMONDS\n");
+                    diamond_mine();
                     clear_screen_CONTINUE();
                     current_status = STATE_MINE;
                 break;
@@ -732,6 +736,10 @@ void clear_screen_CONTINUE(){
 	system("cls");
 }
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//              MENU PRINTING
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 void print_menu(Menu printed_MENU){
     printf(" ======%s======\n", printed_MENU.main_label);
     for(int i = 0; i < printed_MENU.total; i++){
@@ -873,4 +881,84 @@ void print_inventory(){
     printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
 
     printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//                 THE MINES
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+void wood_mine(){
+	int chance_wood = rand () % 100;
+	if(materials.d_axe >= 1){
+		chance_wood = chance_wood - 20;
+	}
+    else if(materials.i_axe >= 1){
+		chance_wood = chance_wood - 10;
+	}
+	
+	if (chance_wood <= 20) {
+		materials.wood += 3;
+		printf(GREEN "Jackpot! You mined 3 logs!" RESET);
+	}
+	else if (chance_wood > 20 && chance_wood <= 50) {
+		materials.wood += 2;
+		printf(GREEN "Congratulations! You mined 2 logs" RESET);
+	}
+	else if (chance_wood > 50 && chance_wood <= 100) {
+		if (materials.wood == 0) {
+			materials.wood += 2;
+			printf(GREEN "Congratulations! You mined 2 logs" RESET);
+		}
+		else {
+			materials.wood += 1;
+			printf(YELLOW "You got 1 log" RESET);
+		}
+	}
+}
+
+void iron_mine () {
+	int chance_iron = rand () % 100;
+	if(materials.d_pickaxe >= 1){
+		chance_iron = chance_iron - 20;
+	}
+    else if(materials.i_pickaxe >= 1){
+		chance_iron = chance_iron - 10;
+	}
+	
+	if (chance_iron <= 20) {
+		materials.iron += 2;
+		printf(GREEN "Jackpot! You found 2 iron" RESET);
+	}
+	else if (chance_iron > 20 && chance_iron <= 50) {
+		materials.iron += 1;
+		printf(YELLOW "You got 1 iron" RESET);
+	}
+	else if (chance_iron > 50 && chance_iron <= 100) {
+		materials.iron += 0;
+		printf(RED "You got unlucky... 0 iron" RESET);
+	}
+}
+
+void diamond_mine() {
+	int chance_diamonds = rand () % 100;
+	if(materials.d_pickaxe >= 1){
+		chance_diamonds = chance_diamonds - 20;
+	}
+    else if(materials.i_pickaxe >= 1){
+		chance_diamonds = chance_diamonds - 10;
+	}
+	
+
+	if (chance_diamonds <= 20) {
+		materials.diamonds += 1;
+		printf(GREEN "Jackpot! You found a diamond!" RESET);
+	}
+	else if (chance_diamonds > 20 && chance_diamonds <= 50) {
+		materials.diamonds += 0;
+		printf(YELLOW "No Diamonds, just some stone... you should try again :)" RESET);
+	}
+	else if (chance_diamonds > 50 && chance_diamonds <= 100) {
+		materials.diamonds += 0;
+		printf(RED "You got unlucky... you should give it one more shot!" RESET);
+	}
 }
