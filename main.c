@@ -67,7 +67,7 @@ typedef struct {
 	int iron;
 	int diamonds;
 	int i_helmet;
-	int d_hlemet;
+	int d_helmet;
 	int i_chestplate;
 	int d_chestplate;
 	int i_leggings;
@@ -105,6 +105,7 @@ void clear_screen_CONTINUE();
 void print_menu(Menu printed_MENU);
 
 void print_craft_menu(Menu printed_MENU);
+void print_inventory();
 
 //=======================================================
 //                     MENU CREATION 
@@ -345,7 +346,7 @@ int main(){
 
             case STATE_INVENTORY:
                 system("cls");
-                printf("INVENTORY\n");
+                print_inventory();
                 clear_screen_CONTINUE();
                 current_status = STATE_MENU;
             break;
@@ -845,4 +846,31 @@ void print_craft_menu(Menu printed_MENU){
         }
     }
     set_cursor_to_zero();
+}
+
+void print_inventory(){
+    printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
+    printf(RED    " Health:           %d/10\n" RESET, materials.player_hp_fighting);
+    printf(YELLOW " Logs:             %d\n" RESET, materials.wood);
+    printf(YELLOW " Iron:             %d\n" RESET, materials.iron);
+    printf(YELLOW " Diamonds:         %d\n" RESET, materials.diamonds);
+    printf(YELLOW " Bones:            %d\n" RESET, materials.bones);
+    printf(YELLOW " Leather:          %d\n" RESET, materials.leather);
+    printf(YELLOW " Wool:             %d\n" RESET, materials.wool);
+    printf(CYAN " diamond sword:      %d\n" RESET, materials.d_sword);
+    printf(GRAY " iron sword:         %d\n" RESET, materials.i_sword);
+    printf(CYAN " diamond pickaxe:    %d\n" RESET, materials.d_pickaxe);
+    printf(GRAY " iron pickaxe:       %d\n" RESET, materials.i_pickaxe);
+    printf(CYAN " diamond axe:        %d\n" RESET, materials.d_axe);
+    printf(GRAY " iron axe:           %d\n" RESET, materials.i_axe);
+    printf(CYAN " diamond helmet:     %d\n" RESET, materials.d_helmet);
+    printf(GRAY	" iron helmet:        %d\n" RESET, materials.i_helmet);
+    printf(CYAN " diamond chestplate: %d\n" RESET, materials.d_chestplate);
+    printf(GRAY " iron chestplate:    %d\n" RESET, materials.i_chestplate);
+    printf(CYAN " diamond leggings:   %d\n" RESET, materials.d_leggings);
+    printf(GRAY " iron leggings:      %d\n" RESET, materials.i_leggings);
+    printf(CYAN " diamond boots:      %d\n" RESET, materials.d_boots);
+    printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
+
+    printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
 }
