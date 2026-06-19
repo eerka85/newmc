@@ -15,6 +15,14 @@
 typedef enum {
     STATE_MENU,
     STATE_CRAFT,
+        STATE_HELMET,
+        STATE_CHESTPLATE,
+        STATE_LEGGINS,
+        STATE_BOOTS,
+        STATE_SWORD,
+        STATE_PICKAXE,
+        STATE_AXE,
+        STATE_BACKPACK,
     STATE_MINE,
         STATE_WOOD,
         STATE_IRON,
@@ -49,6 +57,32 @@ typedef struct {
     int        pos_menu;
 } Menu;
 
+typedef struct {
+    int no_of_TANKs_defeated;
+	int player_hp_fighting;
+	int bones;
+	int leather;
+	int wool;
+	int wood;
+	int iron;
+	int diamonds;
+	int i_helmet;
+	int d_hlemet;
+	int i_chestplate;
+	int d_chestplate;
+	int i_leggings;
+	int d_leggings; 
+	int i_boots;
+	int d_boots ;
+	int d_sword; 
+	int i_sword;
+	int i_pickaxe;
+	int d_pickaxe;
+	int i_axe;
+	int d_axe;
+	int pet_doggos;
+} Resources;
+
 //=======================================================
 //                 FUNCTIONS DECLARATION
 //=======================================================
@@ -57,6 +91,7 @@ int kets();
 int move_in_menu(Menu * menu);
 
 State handle_MAIN_menu();
+State handle_craft_menu();
 State handle_mine_menu();
 State handle_fighting_menu();
     State handle_boss_menu();
@@ -69,6 +104,8 @@ void set_cursor_to_zero();
 void clear_screen_CONTINUE();
 void print_menu(Menu printed_MENU);
 
+void print_craft_menu(Menu printed_MENU);
+
 //=======================================================
 //                     MENU CREATION 
 //            TODO: crafting & encounter menu
@@ -78,6 +115,12 @@ Menu main_menu = {
     "main menu",
     { {"0. LEAVE"}, {"1. CRAFT"}, {"2. MINE"}, {"3. FIGHT"}, {"4. INVENTORY"}, {"5. HEAL"}, {"6. BASE"} },
     7,
+    0 //pos
+};
+Menu craft_menu = {
+    "crafting table",
+    { {"0. LEAVE"}, {"1. HELMET (5 iron/dia)"}, {"2. CHESTPLATE (8 iron/dia)"}, {"3. LEGGINS (6 iron/dia)"}, {"4. BOOTS (4 iron/dia)"}, {"5. SWORD (2 iron/dia) + (2 wood)"}, {"6. PICKAXE (3 iron/dia) + (2 wood)"}, {"7. AXE (3 iron/dia) + (2 wood)"}, {"8. BACKPACK (5 leather)"} },
+    9,
     0 //pos
 };
 Menu mine_menu = {
@@ -104,6 +147,33 @@ Menu base_menu = {
     4,
     0 //pos
 };
+
+Resources materials = {
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+};
+
 
 
 //=======================================================
@@ -141,12 +211,59 @@ int main(){
                 current_status = handle_MAIN_menu();
             break;
 
+            //   CRAFT      CRAFT      CRAFT      CRAFT      CRAFT      CRAFT
+
             case STATE_CRAFT:
-                system("cls");
-                printf("CRAFT\n");
-                clear_screen_CONTINUE();
-                current_status = STATE_MENU;
+                current_status = handle_craft_menu();
             break;
+                case STATE_HELMET:
+                    system("cls");
+                    printf("HELMET\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
+                case STATE_CHESTPLATE:
+                    system("cls");
+                    printf("CHESTPLATE\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
+                case STATE_LEGGINS:
+                    system("cls");
+                    printf("LEGGINS\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
+                case STATE_BOOTS:
+                    system("cls");
+                    printf("BOOTS\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
+                case STATE_SWORD:
+                    system("cls");
+                    printf("SWORD\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
+                case STATE_PICKAXE:
+                    system("cls");
+                    printf("PICKAXE\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
+                case STATE_AXE:
+                    system("cls");
+                    printf("AXE\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
+                case STATE_BACKPACK:
+                    system("cls");
+                    printf("BACKPACK\n");
+                    clear_screen_CONTINUE();
+                    current_status = STATE_CRAFT;
+                break;
 
             //   MINE      MINE      MINE      MINE      MINE      MINE   
 
@@ -397,6 +514,56 @@ State handle_MAIN_menu(){ //prints then checks for input using move in menu
         return STATE_MENU;
     }
 }
+State handle_craft_menu(){ //prints then checks for input using move in menu
+    print_craft_menu(craft_menu); 
+    if(move_in_menu(&craft_menu)){
+        system("cls");
+        switch(craft_menu.pos_menu){
+            case 0:
+                return STATE_MENU;
+            break;
+
+            case 1:
+                return STATE_HELMET;
+            break;
+
+            case 2:
+                return STATE_CHESTPLATE;
+            break;
+
+            case 3:
+                return STATE_LEGGINS;
+            break;
+
+            case 4:
+                return STATE_BOOTS;
+            break;
+
+            case 5:
+                return STATE_SWORD;
+            break;
+
+            case 6:
+                return STATE_PICKAXE;
+            break;
+
+            case 7:
+                return STATE_AXE;
+            break;
+
+            case 8:
+                return STATE_BACKPACK;
+            break;
+
+            default:
+                return STATE_ERR;
+            break;
+        }
+    }
+    else{
+        return STATE_CRAFT;
+    }
+}
 
 State handle_mine_menu(){
     print_menu(mine_menu);
@@ -569,6 +736,113 @@ void print_menu(Menu printed_MENU){
     for(int i = 0; i < printed_MENU.total; i++){
         if(i == printed_MENU.pos_menu){printf(RED " >%s\n" RESET, printed_MENU.choices[i].label);}
         else{printf("  %s\n", printed_MENU.choices[i].label);}
+    }
+    set_cursor_to_zero();
+}
+void print_craft_menu(Menu printed_MENU){
+    printf(" ======%s======\n", printed_MENU.main_label);
+    for(int i = 0; i < printed_MENU.total; i++){
+        if(i == printed_MENU.pos_menu){printf(RED " >%s\n" RESET, printed_MENU.choices[i].label);}
+        else{
+            switch(i){
+                case 0:
+                    printf("  %s\n", printed_MENU.choices[i].label);
+                break;
+
+                case 1:
+                    if(materials.diamonds >= 5){
+                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else if(materials.iron >= 5){
+                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+
+                case 2:
+                    if(materials.diamonds >= 8){
+                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else if(materials.iron >= 8){
+                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+
+                case 3:
+                    if(materials.diamonds >= 6){
+                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else if(materials.iron >= 6){
+                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+
+                case 4:
+                    if(materials.diamonds >= 4){
+                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else if(materials.iron >= 4){
+                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+
+                case 5:
+                    if(materials.diamonds >= 2 && materials.wood >= 2){
+                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else if(materials.iron >= 2 && materials.wood >= 2){
+                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+
+                case 6:
+                    if(materials.diamonds >= 3 && materials.wood >= 2){
+                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else if(materials.iron >= 3 && materials.wood >= 2){
+                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+
+                case 7:
+                    if(materials.diamonds >= 3 && materials.wood >= 2){
+                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else if(materials.iron >= 3 && materials.wood >= 2){
+                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+
+                case 8:
+                    if(materials.leather > 5){
+                        printf(DOG_BROWN_1 "  %s\n" RESET, printed_MENU.choices[i].label);
+                    }
+                    else{
+                        printf("  %s\n", printed_MENU.choices[i].label);
+                    }
+                break;
+            }
+        }
     }
     set_cursor_to_zero();
 }

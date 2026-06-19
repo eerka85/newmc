@@ -9,6 +9,8 @@
 #define PURPLE  "\033[35m"
 #define ORANGE  "\033[38;2;227;121;23m"
 
+#define COLOR_IRON   "\033[38;2;139;126;110m"
+#define COLOR_DIAMOND "\033[38;2;100;200;255m"
 
 //zom//
 #define BLACK   "\033[30m"
