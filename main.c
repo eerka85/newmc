@@ -82,16 +82,16 @@ typedef struct {
 } Crafting_item;
 
 Crafting_item recipe_book[] = {
-    [0] = { .Crafting_item_name = I_HELMET,        .needed_materials = { .iron = 5 } },      
-    [1] = { .Crafting_item_name = D_HELMET,        .needed_materials = { .diamonds = 5 } },  
-    [2] = { .Crafting_item_name = I_CHESTPLATE,    .needed_materials = { .iron = 8 } },      
-    [3] = { .Crafting_item_name = D_CHESTPLATE,    .needed_materials = { .diamonds = 8 } },  
-    [4] = { .Crafting_item_name = I_LEGGINS,       .needed_materials = { .iron = 7 } },      
-    [5] = { .Crafting_item_name = D_LEGGINS,       .needed_materials = { .diamonds = 7 } },  
-    [6] = { .Crafting_item_name = I_BOOTS,         .needed_materials = { .iron = 7 } },      
-    [7] = { .Crafting_item_name = D_BOOTS,         .needed_materials = { .diamonds = 7 } },
-    [8] = { .Crafting_item_name = I_SWORD,         .needed_materials = { .iron = 2, .wood = 1} },
-    [9] = { .Crafting_item_name = D_SWORD,         .needed_materials = { .diamonds = 2, .wood = 1} },
+    [0] =  { .Crafting_item_name = I_HELMET,       .needed_materials = { .iron = 5 } },      
+    [1] =  { .Crafting_item_name = D_HELMET,       .needed_materials = { .diamonds = 5 } },  
+    [2] =  { .Crafting_item_name = I_CHESTPLATE,   .needed_materials = { .iron = 8 } },      
+    [3] =  { .Crafting_item_name = D_CHESTPLATE,   .needed_materials = { .diamonds = 8 } },  
+    [4] =  { .Crafting_item_name = I_LEGGINS,      .needed_materials = { .iron = 7 } },      
+    [5] =  { .Crafting_item_name = D_LEGGINS,      .needed_materials = { .diamonds = 7 } },  
+    [6] =  { .Crafting_item_name = I_BOOTS,        .needed_materials = { .iron = 7 } },      
+    [7] =  { .Crafting_item_name = D_BOOTS,        .needed_materials = { .diamonds = 7 } },
+    [8] =  { .Crafting_item_name = I_SWORD,        .needed_materials = { .iron = 2, .wood = 1} },
+    [9] =  { .Crafting_item_name = D_SWORD,        .needed_materials = { .diamonds = 2, .wood = 1} },
     [10] = { .Crafting_item_name = I_PICKAXE,      .needed_materials = { .iron = 3, .wood = 2} },
     [11] = { .Crafting_item_name = D_PICKAXE,      .needed_materials = { .diamonds = 3, .wood = 2} },
     [12] = { .Crafting_item_name = I_AXE,          .needed_materials = { .iron = 3, .wood = 2} },
@@ -134,6 +134,7 @@ typedef struct {
 	int d_pickaxe;
 	int i_axe;
 	int d_axe;
+    int backpack;
 	int pet_doggos;
 } Materials;
 
@@ -150,6 +151,7 @@ State handle_mine_menu();
 State handle_fighting_menu();
     State handle_boss_menu();
 State handle_base_menu();
+State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant);
 
 void clean_buffer();
 int input_int(int min, int max);
@@ -160,9 +162,13 @@ void print_menu(Menu printed_MENU);
 
 void print_craft_menu(Menu printed_MENU);
 void print_inventory();
+
+int * map_craft_enum_to_struct(What_do_i_craft_please variant);
 void ARMOR_AND_TOOLS_check_craftability_and_print_line(What_do_i_craft_please i_variant, What_do_i_craft_please d_variant, Menu printed_MENU, int i);
 Crafting_item what_recipe(What_do_i_craft_please searched_name);
 int check_resources_for_crafting(Crafting_item recipe);
+void crafting_jew(Crafting_item recipe);
+void craft_me_pls(What_do_i_craft_please variant);
 
 void wood_mine();
 void iron_mine();
@@ -208,6 +214,12 @@ Menu base_menu = {
     4,
     0 //pos
 };
+Menu D_or_I_menu = {
+    "base menu",
+    { {"0. BACK"}, {"1. IRON"}, {"2. DIAMOND"} },
+    3,
+    0 //pos
+};
 
 Materials materials = {
     0, //no_of_TANKs_defeated
@@ -225,13 +237,14 @@ Materials materials = {
     0, //i_leggings
     0, //d_leggings
     0, //i_boots
-    0,  //d_boots
+    0, //d_boots
     0, //d_sword
     0, //i_sword
     0, //i_pickaxe
     0, //d_pickaxe
     0, //i_axe
     0, //d_axe
+    0, //backpack
     0  //pet_doggos
 };
 
@@ -278,51 +291,28 @@ int main(){
                 current_status = handle_craft_menu();
             break;
                 case STATE_HELMET:
-                    system("cls");
-                    printf("HELMET\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_CRAFT;
+                    current_status = handle_D_or_I_menu(STATE_HELMET, I_HELMET);
                 break;
                 case STATE_CHESTPLATE:
-                    system("cls");
-                    printf("CHESTPLATE\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_CRAFT;
+                    current_status = handle_D_or_I_menu(STATE_CHESTPLATE, I_CHESTPLATE);
                 break;
                 case STATE_LEGGINS:
-                    system("cls");
-                    printf("LEGGINS\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_CRAFT;
+                    current_status = handle_D_or_I_menu(STATE_LEGGINS, I_LEGGINS);
                 break;
                 case STATE_BOOTS:
-                    system("cls");
-                    printf("BOOTS\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_CRAFT;
+                    current_status = handle_D_or_I_menu(STATE_BOOTS, I_BOOTS);
                 break;
                 case STATE_SWORD:
-                    system("cls");
-                    printf("SWORD\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_CRAFT;
+                    current_status = handle_D_or_I_menu(STATE_SWORD, I_SWORD);
                 break;
                 case STATE_PICKAXE:
-                    system("cls");
-                    printf("PICKAXE\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_CRAFT;
+                    current_status = handle_D_or_I_menu(STATE_PICKAXE, I_PICKAXE);
                 break;
                 case STATE_AXE:
-                    system("cls");
-                    printf("AXE\n");
-                    clear_screen_CONTINUE();
-                    current_status = STATE_CRAFT;
+                    current_status = handle_D_or_I_menu(STATE_AXE, I_AXE);
                 break;
                 case STATE_BACKPACK:
-                    system("cls");
-                    printf("BACKPACK\n");
-                    clear_screen_CONTINUE();
+                    craft_me_pls(BACKPACK);
                     current_status = STATE_CRAFT;
                 break;
 
@@ -760,6 +750,36 @@ State handle_base_menu(){
         return STATE_BASE;
     }
 }
+
+State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant){
+    print_menu(D_or_I_menu);
+    if(move_in_menu(&D_or_I_menu)){
+        switch(D_or_I_menu.pos_menu){
+            case 0:
+                return STATE_CRAFT;
+            break;
+
+            case 1: //craft iron variant
+                craft_me_pls(variant);
+                return STATE_CRAFT;
+            break;
+
+            case 2: //craft diamond variant
+                craft_me_pls(variant +1);
+                return STATE_CRAFT;
+            break;
+
+            default:
+                return STATE_ERR;
+            break;
+        }
+    }
+    else{
+        return where_am_i_state;
+    }
+}
+
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //               BASIC FUNCTIONS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -809,6 +829,37 @@ void print_menu(Menu printed_MENU){
     }
     set_cursor_to_zero();
 }
+
+void print_inventory(){
+    printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
+    printf(RED    " Health:           %d/10\n" RESET, materials.player_hp_fighting);
+    printf(YELLOW " Logs:             %d\n" RESET, materials.wood);
+    printf(YELLOW " Iron:             %d\n" RESET, materials.iron);
+    printf(YELLOW " Diamonds:         %d\n" RESET, materials.diamonds);
+    printf(YELLOW " Bones:            %d\n" RESET, materials.bones);
+    printf(YELLOW " Leather:          %d\n" RESET, materials.leather);
+    printf(YELLOW " Wool:             %d\n" RESET, materials.wool);
+    printf(CYAN " diamond sword:      %d\n" RESET, materials.d_sword);
+    printf(GRAY " iron sword:         %d\n" RESET, materials.i_sword);
+    printf(CYAN " diamond pickaxe:    %d\n" RESET, materials.d_pickaxe);
+    printf(GRAY " iron pickaxe:       %d\n" RESET, materials.i_pickaxe);
+    printf(CYAN " diamond axe:        %d\n" RESET, materials.d_axe);
+    printf(GRAY " iron axe:           %d\n" RESET, materials.i_axe);
+    printf(CYAN " diamond helmet:     %d\n" RESET, materials.d_helmet);
+    printf(GRAY	" iron helmet:        %d\n" RESET, materials.i_helmet);
+    printf(CYAN " diamond chestplate: %d\n" RESET, materials.d_chestplate);
+    printf(GRAY " iron chestplate:    %d\n" RESET, materials.i_chestplate);
+    printf(CYAN " diamond leggings:   %d\n" RESET, materials.d_leggings);
+    printf(GRAY " iron leggings:      %d\n" RESET, materials.i_leggings);
+    printf(CYAN " diamond boots:      %d\n" RESET, materials.d_boots);
+    printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
+
+    printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//                 CRAFTING 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void print_craft_menu(Menu printed_MENU){
     Crafting_item current_recipe;
@@ -895,34 +946,56 @@ int check_resources_for_crafting(Crafting_item recipe){
            (materials.diamonds >= recipe.needed_materials.diamonds);
 }
 
-
-void print_inventory(){
-    printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
-    printf(RED    " Health:           %d/10\n" RESET, materials.player_hp_fighting);
-    printf(YELLOW " Logs:             %d\n" RESET, materials.wood);
-    printf(YELLOW " Iron:             %d\n" RESET, materials.iron);
-    printf(YELLOW " Diamonds:         %d\n" RESET, materials.diamonds);
-    printf(YELLOW " Bones:            %d\n" RESET, materials.bones);
-    printf(YELLOW " Leather:          %d\n" RESET, materials.leather);
-    printf(YELLOW " Wool:             %d\n" RESET, materials.wool);
-    printf(CYAN " diamond sword:      %d\n" RESET, materials.d_sword);
-    printf(GRAY " iron sword:         %d\n" RESET, materials.i_sword);
-    printf(CYAN " diamond pickaxe:    %d\n" RESET, materials.d_pickaxe);
-    printf(GRAY " iron pickaxe:       %d\n" RESET, materials.i_pickaxe);
-    printf(CYAN " diamond axe:        %d\n" RESET, materials.d_axe);
-    printf(GRAY " iron axe:           %d\n" RESET, materials.i_axe);
-    printf(CYAN " diamond helmet:     %d\n" RESET, materials.d_helmet);
-    printf(GRAY	" iron helmet:        %d\n" RESET, materials.i_helmet);
-    printf(CYAN " diamond chestplate: %d\n" RESET, materials.d_chestplate);
-    printf(GRAY " iron chestplate:    %d\n" RESET, materials.i_chestplate);
-    printf(CYAN " diamond leggings:   %d\n" RESET, materials.d_leggings);
-    printf(GRAY " iron leggings:      %d\n" RESET, materials.i_leggings);
-    printf(CYAN " diamond boots:      %d\n" RESET, materials.d_boots);
-    printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
-
-    printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
+int * map_craft_enum_to_struct(What_do_i_craft_please variant){
+    switch(variant){
+        case I_HELMET:       return &materials.i_helmet;     break;
+        case D_HELMET:       return &materials.d_helmet;     break;
+        case I_CHESTPLATE:   return &materials.i_chestplate; break;
+        case D_CHESTPLATE:   return &materials.d_chestplate; break;
+        case I_LEGGINS:      return &materials.i_leggings;   break;
+        case D_LEGGINS:      return &materials.d_leggings;   break;
+        case I_BOOTS:        return &materials.i_boots;      break;
+        case D_BOOTS:        return &materials.d_boots;      break;
+        case I_SWORD:        return &materials.i_sword;      break;
+        case D_SWORD:        return &materials.d_sword;      break;
+        case I_PICKAXE:      return &materials.i_pickaxe;    break;
+        case D_PICKAXE:      return &materials.d_pickaxe;    break;
+        case I_AXE:          return &materials.i_axe;        break;
+        case D_AXE:          return &materials.d_axe;        break;
+        case BACKPACK:       return &materials.backpack;     break;
+        default:
+            return NULL;
+        break;
+    }
 }
 
+void craft_me_pls(What_do_i_craft_please variant){
+    system("cls");
+    if(!check_resources_for_crafting(what_recipe(variant))){
+        printf(RED " Insufficient materials to craft" RESET);
+    }
+    else{
+        int * P_item_in_inv = map_craft_enum_to_struct(variant);
+        if(*P_item_in_inv >=1){
+            printf(RED " Already have one..." RESET);
+        }
+        else{
+            crafting_jew(what_recipe(variant));
+            (*P_item_in_inv)++;
+            printf(GREEN " Succesfully crafted!" RESET);
+        }
+    }
+    clear_screen_CONTINUE();
+}
+    
+void crafting_jew(Crafting_item recipe){
+    materials.bones     -= recipe.needed_materials.bones;
+    materials.leather   -= recipe.needed_materials.leather;
+    materials.wool      -= recipe.needed_materials.wool;
+    materials.wood      -= recipe.needed_materials.wood;
+    materials.iron      -= recipe.needed_materials.iron;
+    materials.diamonds  -= recipe.needed_materials.diamonds;
+}
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
