@@ -1,3 +1,4 @@
+//TODO: encounter menu
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,6 +47,59 @@ typedef enum {
     STATE_ERR
 } State;
 
+typedef enum {
+    I_HELMET,
+    D_HELMET,
+    I_CHESTPLATE,
+    D_CHESTPLATE,
+    I_LEGGINS,
+    D_LEGGINS,
+    I_BOOTS,
+    D_BOOTS,
+    I_SWORD,
+    D_SWORD,
+    I_PICKAXE,
+    D_PICKAXE,
+    I_AXE,
+    D_AXE,
+    BACKPACK,
+    TOTAL_CRAFTING_ITEMS
+} What_do_i_craft_please;
+
+typedef struct {
+    int bones;
+	int leather;
+	int wool;
+	int wood;
+	int iron;
+	int diamonds;
+} Crafting_materials;
+
+
+typedef struct {
+    What_do_i_craft_please Crafting_item_name;
+    Crafting_materials needed_materials;
+} Crafting_item;
+
+Crafting_item recipe_book[] = {
+    [0] = { .Crafting_item_name = I_HELMET,        .needed_materials = { .iron = 5 } },      
+    [1] = { .Crafting_item_name = D_HELMET,        .needed_materials = { .diamonds = 5 } },  
+    [2] = { .Crafting_item_name = I_CHESTPLATE,    .needed_materials = { .iron = 8 } },      
+    [3] = { .Crafting_item_name = D_CHESTPLATE,    .needed_materials = { .diamonds = 8 } },  
+    [4] = { .Crafting_item_name = I_LEGGINS,       .needed_materials = { .iron = 7 } },      
+    [5] = { .Crafting_item_name = D_LEGGINS,       .needed_materials = { .diamonds = 7 } },  
+    [6] = { .Crafting_item_name = I_BOOTS,         .needed_materials = { .iron = 7 } },      
+    [7] = { .Crafting_item_name = D_BOOTS,         .needed_materials = { .diamonds = 7 } },
+    [8] = { .Crafting_item_name = I_SWORD,         .needed_materials = { .iron = 2, .wood = 1} },
+    [9] = { .Crafting_item_name = D_SWORD,         .needed_materials = { .diamonds = 2, .wood = 1} },
+    [10] = { .Crafting_item_name = I_PICKAXE,      .needed_materials = { .iron = 3, .wood = 2} },
+    [11] = { .Crafting_item_name = D_PICKAXE,      .needed_materials = { .diamonds = 3, .wood = 2} },
+    [12] = { .Crafting_item_name = I_AXE,          .needed_materials = { .iron = 3, .wood = 2} },
+    [13] = { .Crafting_item_name = D_AXE,          .needed_materials = { .diamonds = 3, .wood = 2} },
+    [14] = { .Crafting_item_name = BACKPACK,       .needed_materials = {.leather = 5} }
+};  
+
+
 typedef struct {
     const char *label;
 } Choice;
@@ -73,7 +127,7 @@ typedef struct {
 	int i_leggings;
 	int d_leggings; 
 	int i_boots;
-	int d_boots ;
+	int d_boots;
 	int d_sword; 
 	int i_sword;
 	int i_pickaxe;
@@ -81,7 +135,7 @@ typedef struct {
 	int i_axe;
 	int d_axe;
 	int pet_doggos;
-} Resources;
+} Materials;
 
 //=======================================================
 //                 FUNCTIONS DECLARATION
@@ -106,6 +160,9 @@ void print_menu(Menu printed_MENU);
 
 void print_craft_menu(Menu printed_MENU);
 void print_inventory();
+void ARMOR_AND_TOOLS_check_craftability_and_print_line(What_do_i_craft_please i_variant, What_do_i_craft_please d_variant, Menu printed_MENU, int i);
+Crafting_item what_recipe(What_do_i_craft_please searched_name);
+int check_resources_for_crafting(Crafting_item recipe);
 
 void wood_mine();
 void iron_mine();
@@ -113,7 +170,6 @@ void diamond_mine();
 
 //=======================================================
 //                     MENU CREATION 
-//            TODO: crafting & encounter menu
 //=======================================================
 
 Menu main_menu = {
@@ -124,7 +180,7 @@ Menu main_menu = {
 };
 Menu craft_menu = {
     "crafting table",
-    { {"0. LEAVE"}, {"1. HELMET (5 iron/dia)"}, {"2. CHESTPLATE (8 iron/dia)"}, {"3. LEGGINS (6 iron/dia)"}, {"4. BOOTS (4 iron/dia)"}, {"5. SWORD (2 iron/dia) + (2 wood)"}, {"6. PICKAXE (3 iron/dia) + (2 wood)"}, {"7. AXE (3 iron/dia) + (2 wood)"}, {"8. BACKPACK (5 leather)"} },
+    { {"0. LEAVE"}, {"1. HELMET (5 iron/dia)"}, {"2. CHESTPLATE (8 iron/dia)"}, {"3. LEGGINS (7 iron/dia)"}, {"4. BOOTS (4 iron/dia)"}, {"5. SWORD (2 iron/dia) + (1 wood)"}, {"6. PICKAXE (3 iron/dia) + (2 wood)"}, {"7. AXE (3 iron/dia) + (2 wood)"}, {"8. BACKPACK (5 leather)"} },
     9,
     0 //pos
 };
@@ -153,7 +209,7 @@ Menu base_menu = {
     0 //pos
 };
 
-Resources materials = {
+Materials materials = {
     0, //no_of_TANKs_defeated
     10, //player_hp_fighting
     0, //bones
@@ -348,6 +404,8 @@ int main(){
                     current_status = STATE_FIGHT;
                 break;
 
+            //   INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY   
+
             case STATE_INVENTORY:
                 system("cls");
                 print_inventory();
@@ -519,6 +577,7 @@ State handle_MAIN_menu(){ //prints then checks for input using move in menu
         return STATE_MENU;
     }
 }
+
 State handle_craft_menu(){ //prints then checks for input using move in menu
     print_craft_menu(craft_menu); 
     if(move_in_menu(&craft_menu)){
@@ -600,6 +659,7 @@ State handle_mine_menu(){
         return STATE_MINE;
     }
 }
+
 State handle_fighting_menu(){
     print_menu(fighting_menu);
     if(move_in_menu(&fighting_menu)){
@@ -730,6 +790,7 @@ void set_cursor_to_zero(){
     cursorPosition.Y = 0;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPosition);
 }
+
 void clear_screen_CONTINUE(){
 	printf(BLUE "\n CONTINUE? (press enter)" RESET);
 	getchar();
@@ -748,7 +809,10 @@ void print_menu(Menu printed_MENU){
     }
     set_cursor_to_zero();
 }
+
 void print_craft_menu(Menu printed_MENU){
+    Crafting_item current_recipe;
+
     printf(" ======%s======\n", printed_MENU.main_label);
     for(int i = 0; i < printed_MENU.total; i++){
         if(i == printed_MENU.pos_menu){printf(RED " >%s\n" RESET, printed_MENU.choices[i].label);}
@@ -759,91 +823,35 @@ void print_craft_menu(Menu printed_MENU){
                 break;
 
                 case 1:
-                    if(materials.diamonds >= 5){
-                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else if(materials.iron >= 5){
-                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else{
-                        printf("  %s\n", printed_MENU.choices[i].label);
-                    }
+                    ARMOR_AND_TOOLS_check_craftability_and_print_line(I_HELMET, D_HELMET, printed_MENU, i);
                 break;
 
                 case 2:
-                    if(materials.diamonds >= 8){
-                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else if(materials.iron >= 8){
-                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else{
-                        printf("  %s\n", printed_MENU.choices[i].label);
-                    }
+                    ARMOR_AND_TOOLS_check_craftability_and_print_line(I_CHESTPLATE, D_CHESTPLATE, printed_MENU, i);
                 break;
 
                 case 3:
-                    if(materials.diamonds >= 6){
-                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else if(materials.iron >= 6){
-                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else{
-                        printf("  %s\n", printed_MENU.choices[i].label);
-                    }
+                    ARMOR_AND_TOOLS_check_craftability_and_print_line(I_LEGGINS, D_LEGGINS, printed_MENU, i);
                 break;
 
                 case 4:
-                    if(materials.diamonds >= 4){
-                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else if(materials.iron >= 4){
-                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else{
-                        printf("  %s\n", printed_MENU.choices[i].label);
-                    }
+                    ARMOR_AND_TOOLS_check_craftability_and_print_line(I_BOOTS, D_BOOTS, printed_MENU, i);
                 break;
 
                 case 5:
-                    if(materials.diamonds >= 2 && materials.wood >= 2){
-                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else if(materials.iron >= 2 && materials.wood >= 2){
-                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else{
-                        printf("  %s\n", printed_MENU.choices[i].label);
-                    }
+                    ARMOR_AND_TOOLS_check_craftability_and_print_line(I_SWORD, D_SWORD, printed_MENU, i);
                 break;
 
                 case 6:
-                    if(materials.diamonds >= 3 && materials.wood >= 2){
-                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else if(materials.iron >= 3 && materials.wood >= 2){
-                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else{
-                        printf("  %s\n", printed_MENU.choices[i].label);
-                    }
+                    ARMOR_AND_TOOLS_check_craftability_and_print_line(I_PICKAXE, D_PICKAXE, printed_MENU, i);
                 break;
 
                 case 7:
-                    if(materials.diamonds >= 3 && materials.wood >= 2){
-                        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else if(materials.iron >= 3 && materials.wood >= 2){
-                        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
-                    }
-                    else{
-                        printf("  %s\n", printed_MENU.choices[i].label);
-                    }
+                    ARMOR_AND_TOOLS_check_craftability_and_print_line(I_AXE, D_AXE, printed_MENU, i);
                 break;
 
                 case 8:
-                    if(materials.leather > 5){
+                    if(check_resources_for_crafting(what_recipe(BACKPACK))){
                         printf(DOG_BROWN_1 "  %s\n" RESET, printed_MENU.choices[i].label);
                     }
                     else{
@@ -855,6 +863,38 @@ void print_craft_menu(Menu printed_MENU){
     }
     set_cursor_to_zero();
 }
+
+void ARMOR_AND_TOOLS_check_craftability_and_print_line(What_do_i_craft_please i_variant, What_do_i_craft_please d_variant, Menu printed_MENU, int i){
+    if(check_resources_for_crafting(what_recipe(d_variant))){
+        printf(COLOR_DIAMOND "  %s\n" RESET, printed_MENU.choices[i].label);
+    }
+    else if(check_resources_for_crafting(what_recipe(i_variant))){
+        printf(COLOR_IRON "  %s\n" RESET, printed_MENU.choices[i].label);
+    }
+    else{
+        printf("  %s\n", printed_MENU.choices[i].label);
+    }
+}   
+
+Crafting_item what_recipe(What_do_i_craft_please searched_name){
+    for(int i = 0; i < TOTAL_CRAFTING_ITEMS; i++){
+        if(recipe_book[i].Crafting_item_name == searched_name){
+            return recipe_book[i];
+        }
+    }
+
+    return(Crafting_item){0};
+}
+
+int check_resources_for_crafting(Crafting_item recipe){
+    return (materials.bones >= recipe.needed_materials.bones) &&
+           (materials.leather >= recipe.needed_materials.leather) &&
+           (materials.wool >= recipe.needed_materials.wool) &&
+           (materials.wood >= recipe.needed_materials.wood) &&
+           (materials.iron >= recipe.needed_materials.iron) &&
+           (materials.diamonds >= recipe.needed_materials.diamonds);
+}
+
 
 void print_inventory(){
     printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
@@ -882,6 +922,8 @@ void print_inventory(){
 
     printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
 }
+
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //                 THE MINES
