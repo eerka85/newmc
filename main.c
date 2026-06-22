@@ -1,4 +1,5 @@
 //TODO: encounter menu
+//ai writing counter ----1---- (stinky)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
