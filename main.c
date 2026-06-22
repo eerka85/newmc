@@ -204,6 +204,7 @@ Fighting_state can_i_leave(Monster chosen_monster);
 Fighting_state can_i_attack(Monster * chosen_monster);
 void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name);
 Fighting_state can_i_win(Monster chosen_mon);
+Fighting_state tameing();
 
 
 
@@ -268,7 +269,7 @@ Menu encounter_menu = {
 Materials materials = {
     .no_of_TANKs_defeated = 0,
     .player_hp_fighting = 10.0f,
-    .bones = 0,
+    .bones = 50,
     .leather = 0,
     .wool = 0,
     .wood = 0,
@@ -1238,10 +1239,8 @@ void encounter(Monster chosen_monster){
             break;
 
             case F_STATE_TAME:
-                system("cls");
-                printf("TAME\n");
+                current_F_state = tameing();
                 clear_screen_CONTINUE();
-                current_F_state = F_STATE_MENU;
             break;
 
             case F_STATE_WIN:
@@ -1303,6 +1302,7 @@ Fighting_state can_i_win(Monster chosen_mon){
     clear_screen_CONTINUE();
     return F_STATE_LEAVE;
 }
+
 void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name){ //ai cuz na tohlecto nemam
     if (max_amount <= 0) return;
 
@@ -1320,5 +1320,42 @@ void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *it
     if (amount > 0) {
         *inventory_ptr += amount;
         printf("Gained %d %s\n", amount, item_name);
+    }
+}
+
+Fighting_state tameing(){
+    system("cls");
+    if(materials.bones >0){
+        int doitame = 10;
+        printf(YELLOW " YOU TRY TAMEING THE WILD WOLF\n" RESET);
+        printf(" .\n");
+        Sleep(500);
+        printf(" .\n");
+        Sleep(500);
+        printf(" .\n");
+        Sleep(500);
+        printf(" .\n");
+        Sleep(500);
+        printf(" .\n");
+        Sleep(500);
+        printf(" .\n");
+        Sleep(500);
+        doitame = doitame - rand() %10;
+        if(doitame > 6){
+            printf(GREEN " YOU SUCCESFULLY TAMED THE WOLF\n CONSUMED 1 BONES\n" RESET);
+            materials.pet_doggos = materials.pet_doggos +1;
+            materials.bones = materials.bones -1;
+            return F_STATE_LEAVE;
+        }
+        else{
+            printf(RED " WOLF NOT TAMED. TRY AGAIN?\n CONSUMED 1 BONES\n" RESET);
+            materials.bones = materials.bones -1;
+            return F_STATE_MENU;
+            //counterattack
+        }   
+    }
+    else{
+        printf(RED " NOT ENOUGH BONES\n" RESET);
+        return F_STATE_MENU;
     }
 }
