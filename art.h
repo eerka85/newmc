@@ -497,3 +497,141 @@ void print_doggo(int volba_barva){
 
 }
 
+void print_wolf(){
+	const char * chosen_color = BLACK;
+
+
+	printf("\n "); //new line
+	printf(" ");
+	for(int i = 0; i<4; i++){
+		printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	}
+	for(int i = 0; i<4; i++){
+		printf(" ");
+	}
+	for(int i = 0; i<4; i++){
+		printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	}
+	printf("\n "); //new line
+	printf(" ");
+	for(int i = 0; i<4; i++){
+		printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	}
+	for(int i = 0; i<4; i++){
+		printf(" ");
+	}
+	for(int i = 0; i<4; i++){
+		printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	}	
+	printf("\n "); //new line
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+
+	printf(DOG_GRAY_3 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_3 "\xE2\x96\x88" RESET);
+
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	for(int i = 0; i<4; i++){
+		printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	}
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+
+	printf(DOG_GRAY_3 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_3 "\xE2\x96\x88" RESET);
+
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+	printf("\n "); //new line
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);	
+
+	printf(WHITE "\xE2\x96\x88" RESET);
+	printf(WHITE "\xE2\x96\x88" RESET);
+	for(int i = 0; i<4; i++){
+		printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	}
+	printf(WHITE "\xE2\x96\x88" RESET);
+	printf(WHITE "\xE2\x96\x88" RESET);
+
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+	printf("\n "); //new line
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+	
+	printf(WHITE "\xE2\x96\x88" RESET);
+	printf(WHITE "\xE2\x96\x88" RESET);
+	printf(" ");
+	printf(" ");
+	for(int i = 0; i<4; i++){
+		printf(DOG_BROWN_1 "\xE2\x96\x88" RESET);
+	}
+	printf(" ");
+	printf(" ");
+	printf(WHITE "\xE2\x96\x88" RESET);
+	printf(WHITE "\xE2\x96\x88" RESET);
+
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+	printf("\n "); //new line
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+
+	printf(DOG_BROWN_1 "\xE2\x96\x88" RESET);
+	printf(DOG_BROWN_1 "\xE2\x96\x88" RESET);	
+
+	printf(DOG_BROWN_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	printf(" ");
+	printf(" ");
+	printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_BROWN_2 "\xE2\x96\x88" RESET);
+
+	printf(DOG_BROWN_1 "\xE2\x96\x88" RESET);
+	printf(DOG_BROWN_1 "\xE2\x96\x88" RESET);
+
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+	printf("\n "); //new line
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+
+	printf(DOG_BROWN_2 "\xE2\x96\x88" RESET);
+	printf(DOG_BROWN_2 "\xE2\x96\x88" RESET);
+
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+
+	for(int i = 0; i<6; i++){
+		printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	}
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+
+	printf(DOG_BROWN_2 "\xE2\x96\x88" RESET);
+	printf(DOG_BROWN_2 "\xE2\x96\x88" RESET);
+
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+	printf("\n "); //new line
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+
+	for(int i = 0; i<6; i++){
+		printf(" ");
+	}
+
+	printf(DOG_GRAY_1 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+	printf(DOG_GRAY_2 "\xE2\x96\x88" RESET);
+
+	printf("%s\xE2\x96\x88" RESET, chosen_color);
+	printf("\n "); //new line
+
+	for(int i = 0; i<14; i++){
+		printf("%s\xE2\x96\x88" RESET, chosen_color);
+	}
+	printf("\n");
+
+}

@@ -9,6 +9,7 @@
 #include "art.h"
 
 #define NO_OF_CREATED_CHOICES 15
+#define MAX_PALYER_HP_FIGHTING 10
 
 //=======================================================
 //                    TYPEDEF SHIT
@@ -46,6 +47,13 @@ typedef enum {
     STATE_LEAVE,
     STATE_ERR
 } State;
+
+typedef enum {
+    F_STATE_MENU,
+    F_STATE_RUN,
+    F_STATE_ATTACK,
+    F_STATE_TAME    
+} Fighting_state;
 
 typedef enum {
     I_HELMET,
@@ -113,7 +121,7 @@ typedef struct {
 
 typedef struct {
     int no_of_TANKs_defeated;
-	int player_hp_fighting;
+	float player_hp_fighting;
 	int bones;
 	int leather;
 	int wool;
@@ -138,6 +146,15 @@ typedef struct {
 	int pet_doggos;
 } Materials;
 
+typedef struct {
+    const char * name;
+    int running_reseistance;
+    int hp_mon;
+    int max_hp;
+    float attack_dmg;
+    void (*print_monster)();
+} Monster;
+
 //=======================================================
 //                 FUNCTIONS DECLARATION
 //=======================================================
@@ -152,6 +169,7 @@ State handle_fighting_menu();
     State handle_boss_menu();
 State handle_base_menu();
 State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant);
+Fighting_state handle_encounter_menu(Monster chosen_monster);
 
 void clean_buffer();
 int input_int(int min, int max);
@@ -170,12 +188,16 @@ int check_resources_for_crafting(Crafting_item recipe);
 void crafting_jew(Crafting_item recipe);
 void craft_me_pls(What_do_i_craft_please variant);
 
+
 void wood_mine();
 void iron_mine();
 void diamond_mine();
 
+void encounter(Monster chosen_monster);
+
+
 //=======================================================
-//                     MENU CREATION 
+//                     MENU CREATION
 //=======================================================
 
 Menu main_menu = {
@@ -220,6 +242,16 @@ Menu D_or_I_menu = {
     3,
     0 //pos
 };
+Menu encounter_menu = {
+    "what will you do?",
+    { {"0. TRY TO RUN"}, {"1. ATTACK"}, {"TRY TO TAME WITH BONES"} },
+    2,
+    0
+};
+
+//=======================================================
+//                   typedef CREATION
+//=======================================================
 
 Materials materials = {
     0, //no_of_TANKs_defeated
@@ -247,6 +279,46 @@ Materials materials = {
     0, //backpack
     0  //pet_doggos
 };
+
+Monster zombie = {
+    .hp_mon = 8,
+    .max_hp = 8,
+    .running_reseistance = 6,
+    .name = "Zombie",
+    .attack_dmg = 1.0f,
+    .print_monster = print_zom
+};
+
+Monster skeleton = {
+    .hp_mon = 5,
+    .max_hp = 5,
+    .running_reseistance = 7,
+    .name = "Skeleton",
+    .attack_dmg = 2.0f,
+    .print_monster = print_skel
+};
+
+Monster sheep ={
+    .hp_mon = 3,
+    .max_hp = 3,
+    .running_reseistance = 1,
+    .name = "Sheep",
+    .attack_dmg = 0.1f,
+    .print_monster = print_sheep
+};
+
+Monster wolf ={
+    .hp_mon = 5,
+    .max_hp = 5,
+    .running_reseistance = 3,
+    .name = "Wolf",
+    .attack_dmg = 0.5f,
+    .print_monster = print_wolf
+};
+
+
+
+
 
 
 
@@ -779,7 +851,36 @@ State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant)
     }
 }
 
+Fighting_state handle_encounter_menu(Monster chosen_monster){
+    chosen_monster.print_monster();
+    printf("A wild %s has appeared!\n", chosen_monster.name);
+    printf(GREEN "Your HP: %d/%d    " RESET, materials.player_hp_fighting, MAX_PALYER_HP_FIGHTING);
+    printf(RED "Enemy HP: %d/%d\n" RESET, chosen_monster.hp_mon, chosen_monster.max_hp);
+    print_menu(encounter_menu);
 
+    if(move_in_menu(&encounter_menu)){
+        switch(encounter_menu.pos_menu){
+            case 0:
+                return F_STATE_RUN;
+            break;
+
+            case 1:
+                return F_STATE_ATTACK;
+            break;
+
+            case 2:
+                return F_STATE_TAME;
+            break;
+
+            default:
+                exit(21);
+            break;
+        }
+    }
+    else{
+        return F_STATE_MENU;
+    }
+}
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //               BASIC FUNCTIONS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1076,4 +1177,50 @@ void diamond_mine() {
 		materials.diamonds += 0;
 		printf(RED "You got unlucky... you should give it one more shot!" RESET);
 	}
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//                   FIGTING
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+void encounter(Monster chosen_monster){
+    Fighting_state current_F_state = F_STATE_MENU;
+
+    system("cls");
+    if(strcmp(chosen_monster.name, "Wolf") == 0){ //make tame avalible
+        encounter_menu.total = 3;
+    }
+    else{
+        encounter_menu.total = 2;
+    }
+
+    while(materials.player_hp_fighting >0){
+        switch(current_F_state){
+
+            case F_STATE_MENU:
+                current_F_state = handle_encounter_menu(chosen_monster);
+            break;
+
+            case F_STATE_RUN:
+                system("cls");
+                    printf("RUN\n");
+                    clear_screen_CONTINUE();
+                    current_F_state = F_STATE_MENU;
+            break;
+
+            case F_STATE_ATTACK:
+                system("cls");
+                    printf("ATTACK\n");
+                    clear_screen_CONTINUE();
+                    current_F_state = F_STATE_MENU;
+            break;
+
+            case F_STATE_TAME:
+                system("cls");
+                    printf("TAME\n");
+                    clear_screen_CONTINUE();
+                    current_F_state = F_STATE_MENU;
+            break;
+        }
+    }
 }
