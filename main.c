@@ -53,7 +53,8 @@ typedef enum {
     F_STATE_RUN,
     F_STATE_ATTACK,
     F_STATE_TAME,
-    F_STATE_LEAVE
+    F_STATE_LEAVE,
+    F_STATE_WIN 
 } Fighting_state;
 
 typedef enum {
@@ -145,15 +146,18 @@ typedef struct {
 	int d_axe;
     int backpack;
 	int pet_doggos;
+    float attack_dmg;
 } Materials;
 
 typedef struct {
     const char * name;
-    int running_reseistance;
-    int hp_mon;
-    int max_hp;
+    int running_resistance;
+    int hitting_resistance;
+    float hp_mon;
+    float max_hp;
     float attack_dmg;
     void (*print_monster)();
+    Crafting_materials loottable;
 } Monster;
 
 //=======================================================
@@ -196,6 +200,11 @@ void diamond_mine();
 
 void encounter(Monster chosen_monster);
 Fighting_state can_i_leave(Monster chosen_monster);
+Fighting_state can_i_attack(Monster * chosen_monster);
+void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name);
+Fighting_state can_i_win(Monster chosen_mon);
+
+
 
 
 //=======================================================
@@ -256,65 +265,74 @@ Menu encounter_menu = {
 //=======================================================
 
 Materials materials = {
-    0, //no_of_TANKs_defeated
-    10.0f, //player_hp_fighting
-    0, //bones
-    0, //leather
-    0, //wool
-    0, //wood
-    0, //iron
-    0, //diamonds
-    0, //i_helmet
-    0, //d_helmet
-    0, //i_chestplate
-    0, //d_chestplate
-    0, //i_leggings
-    0, //d_leggings
-    0, //i_boots
-    0, //d_boots
-    0, //d_sword
-    0, //i_sword
-    0, //i_pickaxe
-    0, //d_pickaxe
-    0, //i_axe
-    0, //d_axe
-    0, //backpack
-    0  //pet_doggos
+    .no_of_TANKs_defeated = 0,
+    .player_hp_fighting = 10.0f,
+    .bones = 0,
+    .leather = 0,
+    .wool = 0,
+    .wood = 0,
+    .iron = 0,
+    .diamonds = 0,
+    .i_helmet = 0,
+    .d_helmet = 0,
+    .i_chestplate = 0,
+    .d_chestplate = 0,
+    .i_leggings = 0,
+    .d_leggings = 0,
+    .i_boots = 0,
+    .d_boots = 0,
+    .d_sword = 0,
+    .i_sword = 0,
+    .i_pickaxe = 0,
+    .d_pickaxe = 0,
+    .i_axe = 0,
+    .d_axe = 0,
+    .backpack = 0,
+    .pet_doggos = 0,
+    .attack_dmg = 1.5f
 };
 
 Monster zombie = {
-    .hp_mon = 8,
-    .max_hp = 8,
-    .running_reseistance = 6,
+    .hp_mon = 8.0f,
+    .max_hp = 8.0f,
+    .running_resistance = 6,
     .name = "Zombie",
     .attack_dmg = 1.0f,
+    .hitting_resistance = 3,
+    .loottable = { .iron = 1 },
     .print_monster = print_zom
 };
 
 Monster skeleton = {
-    .hp_mon = 5,
-    .max_hp = 5,
-    .running_reseistance = 7,
+    .hp_mon = 5.0f,
+    .max_hp = 5.0f,
+    .running_resistance = 7,
     .name = "Skeleton",
     .attack_dmg = 2.0f,
+    .hitting_resistance = 4,
+    .loottable = { .bones = 2 },
     .print_monster = print_skel
 };
 
 Monster sheep ={
-    .hp_mon = 3,
-    .max_hp = 3,
-    .running_reseistance = 1,
+    .hp_mon = 3.0f,
+    .max_hp = 3.0f,
+    .running_resistance = 1,
     .name = "Sheep",
     .attack_dmg = 0.1f,
+    .hitting_resistance = 5,
+    .loottable = { .wool = 1 },
     .print_monster = print_sheep
 };
 
 Monster wolf ={
-    .hp_mon = 5,
-    .max_hp = 5,
-    .running_reseistance = 3,
+    .hp_mon = 5.0f,
+    .max_hp = 5.0f,
+    .running_resistance = 3,                
     .name = "Wolf",
     .attack_dmg = 0.5f,
+    .hitting_resistance = 5,
+    .loottable = { .bones = 1 },
     .print_monster = print_wolf
 };
 
@@ -1187,6 +1205,7 @@ void diamond_mine() {
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void encounter(Monster chosen_monster){
+
     Fighting_state current_F_state = F_STATE_MENU;
 
     system("cls");
@@ -1198,6 +1217,11 @@ void encounter(Monster chosen_monster){
     }
 
     while(materials.player_hp_fighting >0 ){
+
+        if(chosen_monster.hp_mon <=0){
+            current_F_state = F_STATE_WIN;
+        }
+
         switch(current_F_state){
 
             case F_STATE_MENU:
@@ -1209,10 +1233,7 @@ void encounter(Monster chosen_monster){
             break;
 
             case F_STATE_ATTACK:
-                system("cls");
-                printf("ATTACK\n");
-                clear_screen_CONTINUE();
-                current_F_state = F_STATE_MENU;
+                current_F_state = can_i_attack(&chosen_monster);
             break;
 
             case F_STATE_TAME:
@@ -1222,10 +1243,12 @@ void encounter(Monster chosen_monster){
                 current_F_state = F_STATE_MENU;
             break;
 
+            case F_STATE_WIN:
+                current_F_state = can_i_win(chosen_monster);
+            break;
+
             case F_STATE_LEAVE:
                 system("cls");
-                printf("leaving\n");
-                clear_screen_CONTINUE();
             break;
         }
         if(current_F_state == F_STATE_LEAVE) break; 
@@ -1235,7 +1258,7 @@ void encounter(Monster chosen_monster){
 Fighting_state can_i_leave(Monster chosen_monster){
     system("cls");
     int tmp = rand() % 11;
-    tmp = tmp - chosen_monster.running_reseistance;
+    tmp = tmp - chosen_monster.running_resistance;
     if(tmp >= 0){
         printf(GREEN " ESCASPED SUCCEFULLY\n" RESET);
         return F_STATE_LEAVE;
@@ -1243,13 +1266,58 @@ Fighting_state can_i_leave(Monster chosen_monster){
     else{
         printf(RED " XXX COULDNT ESCAPE... XXX\n" RESET);
         //counterattack
-        if(materials.player_hp_fighting <= 0){
-            printf(RED " YOU DIED... GAME OVER\n" RESET);
-            clear_screen_CONTINUE();
-            exit(0);
-        }
         return F_STATE_MENU;
     }
     clear_screen_CONTINUE();
 }
 
+Fighting_state can_i_attack(Monster * chosen_monster){
+    system("cls");
+
+    int tmp = rand() %11;
+    tmp -= chosen_monster->hitting_resistance;
+    if(tmp > 0){
+        chosen_monster->hp_mon -= materials.attack_dmg;
+        printf(BOLD " ATTACK HIT for %.1f\n" RESET, materials.attack_dmg);
+    }
+    else{
+        printf(BOLD " ATTACK MISSED\n" RESET);
+        //counterattack
+    }
+
+    clear_screen_CONTINUE();
+    return F_STATE_MENU;
+}
+
+Fighting_state can_i_win(Monster chosen_mon){
+    system("cls");
+
+    i_would_like_to_add_loot(&materials.bones,    chosen_mon.loottable.bones, "bones");
+    i_would_like_to_add_loot(&materials.leather,  chosen_mon.loottable.leather, "leather");
+    i_would_like_to_add_loot(&materials.wool,     chosen_mon.loottable.wool, "wool");
+    i_would_like_to_add_loot(&materials.wood,     chosen_mon.loottable.wood, "wood");
+    i_would_like_to_add_loot(&materials.iron,     chosen_mon.loottable.iron, "iron");
+    i_would_like_to_add_loot(&materials.diamonds, chosen_mon.loottable.diamonds, "diamonds");
+
+    clear_screen_CONTINUE();
+    return F_STATE_LEAVE;
+}
+void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name){ //ai cuz na tohlecto nemam
+    if (max_amount <= 0) return;
+
+    int amount; //int amount = (rand() % 11 > 5) ? max_amount : (max_amount - 1);
+    if(rand() %10 > 5){
+        amount = max_amount;
+    }
+    else{
+        amount = max_amount -1;
+    }
+    
+    // Safety check: don't add negative loot
+    if (amount < 0) amount = 0;
+
+    if (amount > 0) {
+        *inventory_ptr += amount;
+        printf("Gained %d %s\n", amount, item_name);
+    }
+}
