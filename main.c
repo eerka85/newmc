@@ -1,4 +1,4 @@
-//TODO: encounter menu
+//TODO: counterattack and calculate attackdmg
 //ai writing counter ----1---- (stinky)
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,6 +148,7 @@ typedef struct {
     int backpack;
 	int pet_doggos;
     float attack_dmg;
+    int call_of_the_night;
 } Materials;
 
 typedef struct {
@@ -198,6 +199,9 @@ void craft_me_pls(What_do_i_craft_please variant);
 void wood_mine();
 void iron_mine();
 void diamond_mine();
+
+
+void plains();
 
 void encounter(Monster chosen_monster);
 Fighting_state can_i_leave(Monster chosen_monster);
@@ -291,7 +295,8 @@ Materials materials = {
     .d_axe = 0,
     .backpack = 0,
     .pet_doggos = 0,
-    .attack_dmg = 1.5f
+    .attack_dmg = 1.5f,
+    .call_of_the_night = 5
 };
 
 Monster zombie = {
@@ -477,8 +482,7 @@ int main(){
                     break;
                 case STATE_EXPLORE_PLAINS:
                     system("cls");
-                    printf("EXPLORE PLAINS\n");
-                    clear_screen_CONTINUE();
+                    plains();
                     current_status = STATE_FIGHT;
                 break;
                 case STATE_EXPLORE_CAVES:
@@ -1206,6 +1210,23 @@ void diamond_mine() {
 //                   FIGTING
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+void plains(){
+    if(materials.call_of_the_night >0){
+        if(rand() %10 > 3) encounter(sheep);
+        else encounter(wolf);
+    }
+    else{
+        if(rand() %10 > 3) encounter(zombie);
+        else encounter(skeleton);
+    }
+
+    if(materials.call_of_the_night == -4) materials.call_of_the_night = 5;
+    else materials.call_of_the_night --;
+
+}
+
+
+
 void encounter(Monster chosen_monster){
 
     Fighting_state current_F_state = F_STATE_MENU;
@@ -1251,7 +1272,7 @@ void encounter(Monster chosen_monster){
                 system("cls");
             break;
         }
-        if(current_F_state == F_STATE_LEAVE) break; 
+        if(current_F_state == F_STATE_LEAVE) return; 
     }
 }
 
@@ -1261,6 +1282,7 @@ Fighting_state can_i_leave(Monster chosen_monster){
     tmp = tmp - chosen_monster.running_resistance;
     if(tmp >= 0){
         printf(GREEN " ESCASPED SUCCEFULLY\n" RESET);
+        clear_screen_CONTINUE();
         return F_STATE_LEAVE;
     }
     else{
