@@ -52,7 +52,8 @@ typedef enum {
     F_STATE_MENU,
     F_STATE_RUN,
     F_STATE_ATTACK,
-    F_STATE_TAME    
+    F_STATE_TAME,
+    F_STATE_LEAVE
 } Fighting_state;
 
 typedef enum {
@@ -194,6 +195,7 @@ void iron_mine();
 void diamond_mine();
 
 void encounter(Monster chosen_monster);
+Fighting_state can_i_leave(Monster chosen_monster);
 
 
 //=======================================================
@@ -1195,7 +1197,7 @@ void encounter(Monster chosen_monster){
         encounter_menu.total = 2;
     }
 
-    while(materials.player_hp_fighting >0){
+    while(materials.player_hp_fighting >0 ){
         switch(current_F_state){
 
             case F_STATE_MENU:
@@ -1203,25 +1205,51 @@ void encounter(Monster chosen_monster){
             break;
 
             case F_STATE_RUN:
-                system("cls");
-                    printf("RUN\n");
-                    clear_screen_CONTINUE();
-                    current_F_state = F_STATE_MENU;
+                current_F_state = can_i_leave(chosen_monster); 
             break;
 
             case F_STATE_ATTACK:
                 system("cls");
-                    printf("ATTACK\n");
-                    clear_screen_CONTINUE();
-                    current_F_state = F_STATE_MENU;
+                printf("ATTACK\n");
+                clear_screen_CONTINUE();
+                current_F_state = F_STATE_MENU;
             break;
 
             case F_STATE_TAME:
                 system("cls");
-                    printf("TAME\n");
-                    clear_screen_CONTINUE();
-                    current_F_state = F_STATE_MENU;
+                printf("TAME\n");
+                clear_screen_CONTINUE();
+                current_F_state = F_STATE_MENU;
+            break;
+
+            case F_STATE_LEAVE:
+                system("cls");
+                printf("leaving\n");
+                clear_screen_CONTINUE();
             break;
         }
+        if(current_F_state == F_STATE_LEAVE) break; 
     }
 }
+
+Fighting_state can_i_leave(Monster chosen_monster){
+    system("cls");
+    int tmp = rand() % 11;
+    tmp = tmp - chosen_monster.running_reseistance;
+    if(tmp >= 0){
+        printf(GREEN " ESCASPED SUCCEFULLY\n" RESET);
+        return F_STATE_LEAVE;
+    }
+    else{
+        printf(RED " XXX COULDNT ESCAPE... XXX\n" RESET);
+        //counterattack
+        if(materials.player_hp_fighting <= 0){
+            printf(RED " YOU DIED... GAME OVER\n" RESET);
+            clear_screen_CONTINUE();
+            exit(0);
+        }
+        return F_STATE_MENU;
+    }
+    clear_screen_CONTINUE();
+}
+
