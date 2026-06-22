@@ -9,7 +9,7 @@
 #include "art.h"
 
 #define NO_OF_CREATED_CHOICES 15
-#define MAX_PALYER_HP_FIGHTING 10
+#define MAX_PALYER_HP_FIGHTING 10.0f
 
 //=======================================================
 //                    TYPEDEF SHIT
@@ -244,7 +244,7 @@ Menu D_or_I_menu = {
 };
 Menu encounter_menu = {
     "what will you do?",
-    { {"0. TRY TO RUN"}, {"1. ATTACK"}, {"TRY TO TAME WITH BONES"} },
+    { {"0. TRY TO RUN"}, {"1. ATTACK"}, {"2. TRY TO TAME WITH BONES"} },
     2,
     0
 };
@@ -255,7 +255,7 @@ Menu encounter_menu = {
 
 Materials materials = {
     0, //no_of_TANKs_defeated
-    10, //player_hp_fighting
+    10.0f, //player_hp_fighting
     0, //bones
     0, //leather
     0, //wool
@@ -477,7 +477,7 @@ int main(){
 
             case STATE_HEAL:
                 system("cls");
-                printf("HEAL\n");
+                encounter(wolf);
                 clear_screen_CONTINUE();
                 current_status = STATE_MENU;
             break;
@@ -854,8 +854,8 @@ State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant)
 Fighting_state handle_encounter_menu(Monster chosen_monster){
     chosen_monster.print_monster();
     printf("A wild %s has appeared!\n", chosen_monster.name);
-    printf(GREEN "Your HP: %d/%d    " RESET, materials.player_hp_fighting, MAX_PALYER_HP_FIGHTING);
-    printf(RED "Enemy HP: %d/%d\n" RESET, chosen_monster.hp_mon, chosen_monster.max_hp);
+    printf(GREEN "Your HP: %.1f/%.1f    " RESET, materials.player_hp_fighting, MAX_PALYER_HP_FIGHTING);
+    printf(RED "Enemy HP: %.1f/%.1f\n" RESET, chosen_monster.hp_mon, chosen_monster.max_hp);
     print_menu(encounter_menu);
 
     if(move_in_menu(&encounter_menu)){
@@ -881,6 +881,7 @@ Fighting_state handle_encounter_menu(Monster chosen_monster){
         return F_STATE_MENU;
     }
 }
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //               BASIC FUNCTIONS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
