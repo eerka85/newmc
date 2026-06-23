@@ -1,5 +1,5 @@
-//TODO: counterattack and calculate attackdmg
-//ai writing counter ----1---- (stinky)
+//TODO: death + coins
+//ai writing counter ----2---- (stinky)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +11,13 @@
 
 #define NO_OF_CREATED_CHOICES 15
 #define MAX_PALYER_HP_FIGHTING 10.0f
+
+#define D_SWORD_DMG    2.5f
+#define I_SWORD_DMG    2.0f
+#define BAREHANDED_DMG 1.5f
+
+#define D_ARMOR_PIECE 1.0f
+#define I_ARMOR_PIECE 0.5f
 
 //=======================================================
 //                    TYPEDEF SHIT
@@ -123,6 +130,7 @@ typedef struct {
 } Menu;
 
 typedef struct {
+    const char * P_name;
     int no_of_TANKs_defeated;
 	float player_hp_fighting;
 	int bones;
@@ -148,7 +156,10 @@ typedef struct {
     int backpack;
 	int pet_doggos;
     float attack_dmg;
+    float protection_armor;
     int call_of_the_night;
+    Fighting_state current_F_state;
+    State current_status;
 } Materials;
 
 typedef struct {
@@ -158,6 +169,7 @@ typedef struct {
     float hp_mon;
     float max_hp;
     float attack_dmg;
+    int xtra_accuracy;
     void (*print_monster)();
     Crafting_materials loottable;
 } Monster;
@@ -203,12 +215,19 @@ void diamond_mine();
 
 void plains();
 
+int is_death();
+
 void encounter(Monster chosen_monster);
 Fighting_state can_i_leave(Monster chosen_monster);
 Fighting_state can_i_attack(Monster * chosen_monster);
 void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name);
 Fighting_state can_i_win(Monster chosen_mon);
-Fighting_state tameing();
+Fighting_state tameing(Monster chosen_mon);
+void calc_equipment();
+float better_armor(int d_variant, int i_variant);
+void monster_attack(Monster chosen_monster);
+
+
 
 
 
@@ -271,6 +290,7 @@ Menu encounter_menu = {
 //=======================================================
 
 Materials materials = {
+    .P_name = "unnamed one",
     .no_of_TANKs_defeated = 0,
     .player_hp_fighting = 10.0f,
     .bones = 50,
@@ -295,8 +315,11 @@ Materials materials = {
     .d_axe = 0,
     .backpack = 0,
     .pet_doggos = 0,
-    .attack_dmg = 1.5f,
-    .call_of_the_night = 5
+    .attack_dmg = BAREHANDED_DMG,
+    .protection_armor = 0.0f,
+    .call_of_the_night = 5,
+    .current_F_state = F_STATE_MENU,
+    .current_status = STATE_MENU
 };
 
 Monster zombie = {
@@ -305,6 +328,7 @@ Monster zombie = {
     .running_resistance = 6,
     .name = "Zombie",
     .attack_dmg = 1.0f,
+    .xtra_accuracy = 1,
     .hitting_resistance = 3,
     .loottable = { .iron = 1 },
     .print_monster = print_zom
@@ -316,6 +340,7 @@ Monster skeleton = {
     .running_resistance = 7,
     .name = "Skeleton",
     .attack_dmg = 2.0f,
+    .xtra_accuracy = 1,
     .hitting_resistance = 4,
     .loottable = { .bones = 2 },
     .print_monster = print_skel
@@ -371,125 +396,125 @@ int main(){
     //###################
     //     VARIABLES
     //###################
-    State current_status = STATE_MENU;
+    materials.current_status = STATE_MENU;
 
 
     //###################
     // MAIN CYCLE START
     //###################
 
-    while(current_status != STATE_LEAVE){
-        switch(current_status){
+    while(materials.current_status != STATE_LEAVE){
+        switch(materials.current_status){
             case STATE_MENU:
-                current_status = handle_MAIN_menu();
+                materials.current_status = handle_MAIN_menu();
             break;
 
             //   CRAFT      CRAFT      CRAFT      CRAFT      CRAFT      CRAFT
 
             case STATE_CRAFT:
-                current_status = handle_craft_menu();
+                materials.current_status = handle_craft_menu();
             break;
                 case STATE_HELMET:
-                    current_status = handle_D_or_I_menu(STATE_HELMET, I_HELMET);
+                    materials.current_status = handle_D_or_I_menu(STATE_HELMET, I_HELMET);
                 break;
                 case STATE_CHESTPLATE:
-                    current_status = handle_D_or_I_menu(STATE_CHESTPLATE, I_CHESTPLATE);
+                    materials.current_status = handle_D_or_I_menu(STATE_CHESTPLATE, I_CHESTPLATE);
                 break;
                 case STATE_LEGGINS:
-                    current_status = handle_D_or_I_menu(STATE_LEGGINS, I_LEGGINS);
+                    materials.current_status = handle_D_or_I_menu(STATE_LEGGINS, I_LEGGINS);
                 break;
                 case STATE_BOOTS:
-                    current_status = handle_D_or_I_menu(STATE_BOOTS, I_BOOTS);
+                    materials.current_status = handle_D_or_I_menu(STATE_BOOTS, I_BOOTS);
                 break;
                 case STATE_SWORD:
-                    current_status = handle_D_or_I_menu(STATE_SWORD, I_SWORD);
+                    materials.current_status = handle_D_or_I_menu(STATE_SWORD, I_SWORD);
                 break;
                 case STATE_PICKAXE:
-                    current_status = handle_D_or_I_menu(STATE_PICKAXE, I_PICKAXE);
+                    materials.current_status = handle_D_or_I_menu(STATE_PICKAXE, I_PICKAXE);
                 break;
                 case STATE_AXE:
-                    current_status = handle_D_or_I_menu(STATE_AXE, I_AXE);
+                    materials.current_status = handle_D_or_I_menu(STATE_AXE, I_AXE);
                 break;
                 case STATE_BACKPACK:
                     craft_me_pls(BACKPACK);
-                    current_status = STATE_CRAFT;
+                    materials.current_status = STATE_CRAFT;
                 break;
 
             //   MINE      MINE      MINE      MINE      MINE      MINE   
 
             case STATE_MINE:
-                current_status = handle_mine_menu();
+                materials.current_status = handle_mine_menu();
             break;
 
                 case STATE_WOOD:
                     system("cls");
                     wood_mine();
                     clear_screen_CONTINUE();
-                    current_status = STATE_MINE;
+                    materials.current_status = STATE_MINE;
                 break;
 
                 case STATE_IRON:
                     system("cls");
                     iron_mine();
                     clear_screen_CONTINUE();
-                    current_status = STATE_MINE;
+                    materials.current_status = STATE_MINE;
                 break;
 
                 case STATE_DIAMONDS:
                     system("cls");
                     diamond_mine();
                     clear_screen_CONTINUE();
-                    current_status = STATE_MINE;
+                    materials.current_status = STATE_MINE;
                 break;
             
             //   FIGHT      FIGHT      FIGHT      FIGHT      FIGHT      FIGHT   
 
             case STATE_FIGHT:
-                current_status = handle_fighting_menu();
+                materials.current_status = handle_fighting_menu();
             break;
                 case STATE_BOSS:
-                    current_status = handle_boss_menu();
+                    materials.current_status = handle_boss_menu();
                 break;
                     case STATE_SAMURAI:
                         system("cls");
                         printf("SAMURAI\n");
                         clear_screen_CONTINUE();
-                        current_status = STATE_BOSS;
+                        materials.current_status = STATE_BOSS;
                     break;
                     case STATE_MAGE:
                         system("cls");
                         printf("MAGE\n");
                         clear_screen_CONTINUE();
-                        current_status = STATE_BOSS;
+                        materials.current_status = STATE_BOSS;
                     break;
                     case STATE_TANK:
                         system("cls");
                         printf("TANK\n");
                         clear_screen_CONTINUE();
-                        current_status = STATE_BOSS;
+                        materials.current_status = STATE_BOSS;
                     break;
                     case STATE_ASSASSIN:
                         system("cls");
                         printf("ASSASSIN\n");
                         clear_screen_CONTINUE();
-                        current_status = STATE_BOSS;
+                        materials.current_status = STATE_BOSS;
                     break;
                     case STATE_RANDOM_BOSS:
                         system("cls");
                         printf("RANDOM BOSS\n");
                         clear_screen_CONTINUE();
-                        current_status = STATE_BOSS;
+                        materials.current_status = STATE_BOSS;
                     break;
                 case STATE_EXPLORE_PLAINS:
                     system("cls");
                     plains();
-                    current_status = STATE_FIGHT;
+                    materials.current_status = STATE_FIGHT;
                 break;
                 case STATE_EXPLORE_CAVES:
                     system("cls");
                     printf("EXPLORE CAVES IS WORK IN PROGRESS\n");
                     clear_screen_CONTINUE();
-                    current_status = STATE_FIGHT;
+                    materials.current_status = STATE_FIGHT;
                 break;
 
             //   INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY   
@@ -498,36 +523,36 @@ int main(){
                 system("cls");
                 print_inventory();
                 clear_screen_CONTINUE();
-                current_status = STATE_MENU;
+                materials.current_status = STATE_MENU;
             break;
 
             case STATE_HEAL:
                 system("cls");
                 encounter(wolf);
                 clear_screen_CONTINUE();
-                current_status = STATE_MENU;
+                materials.current_status = STATE_MENU;
             break;
 
             case STATE_BASE:
-                current_status = handle_base_menu();
+                materials.current_status = handle_base_menu();
             break;
                 case STATE_VILLAGERS:
                     system("cls");
                     printf("VILLAGERS IN PROGRESS\n");
                     clear_screen_CONTINUE();
-                    current_status = STATE_BASE;
+                    materials.current_status = STATE_BASE;
                 break;
                 case STATE_STORAGE:
                     system("cls");
                     printf("STORAGE\n");
                     clear_screen_CONTINUE();
-                    current_status = STATE_BASE;
+                    materials.current_status = STATE_BASE;
                 break;
                 case STATE_PETS:
                     system("cls");
                     printf("PETS\n");
                     clear_screen_CONTINUE();
-                    current_status = STATE_BASE;
+                    materials.current_status = STATE_BASE;
                 break;
     
             case STATE_LEAVE:
@@ -1211,11 +1236,20 @@ void diamond_mine() {
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void plains(){
+
     if(materials.call_of_the_night >0){
+        system("cls");
+        printf( YELLOW " Its a brand new day!" RESET);
+        Sleep(50);
+        clear_screen_CONTINUE();
         if(rand() %10 > 3) encounter(sheep);
         else encounter(wolf);
     }
     else{
+        system("cls");
+        printf( RED " The night calls for you (yea you're screwed...)" RESET);
+        Sleep(50);
+        clear_screen_CONTINUE();
         if(rand() %10 > 3) encounter(zombie);
         else encounter(skeleton);
     }
@@ -1225,11 +1259,9 @@ void plains(){
 
 }
 
-
-
 void encounter(Monster chosen_monster){
-
-    Fighting_state current_F_state = F_STATE_MENU;
+    calc_equipment();
+    materials.current_F_state = F_STATE_MENU;
 
     system("cls");
     if(strcmp(chosen_monster.name, "Wolf") == 0){ //make tame avalible
@@ -1242,37 +1274,37 @@ void encounter(Monster chosen_monster){
     while(materials.player_hp_fighting >0 ){
 
         if(chosen_monster.hp_mon <=0){
-            current_F_state = F_STATE_WIN;
+            materials.current_F_state = F_STATE_WIN;
         }
 
-        switch(current_F_state){
+        switch(materials.current_F_state){
 
             case F_STATE_MENU:
-                current_F_state = handle_encounter_menu(chosen_monster);
+                materials.current_F_state = handle_encounter_menu(chosen_monster);
             break;
 
             case F_STATE_RUN:
-                current_F_state = can_i_leave(chosen_monster); 
+                materials.current_F_state = can_i_leave(chosen_monster); 
             break;
 
             case F_STATE_ATTACK:
-                current_F_state = can_i_attack(&chosen_monster);
+                materials.current_F_state = can_i_attack(&chosen_monster);
             break;
 
             case F_STATE_TAME:
-                current_F_state = tameing();
+                materials.current_F_state = tameing(chosen_monster);
                 clear_screen_CONTINUE();
             break;
 
             case F_STATE_WIN:
-                current_F_state = can_i_win(chosen_monster);
+                materials.current_F_state = can_i_win(chosen_monster);
             break;
 
             case F_STATE_LEAVE:
                 system("cls");
             break;
         }
-        if(current_F_state == F_STATE_LEAVE) return; 
+        if(materials.current_F_state == F_STATE_LEAVE) return; 
     }
 }
 
@@ -1287,7 +1319,8 @@ Fighting_state can_i_leave(Monster chosen_monster){
     }
     else{
         printf(RED " XXX COULDNT ESCAPE... XXX\n" RESET);
-        //counterattack
+        clear_screen_CONTINUE();
+        monster_attack(chosen_monster);
         return F_STATE_MENU;
     }
     clear_screen_CONTINUE();
@@ -1301,10 +1334,13 @@ Fighting_state can_i_attack(Monster * chosen_monster){
     if(tmp > 0){
         chosen_monster->hp_mon -= materials.attack_dmg;
         printf(BOLD " ATTACK HIT for %.1f\n" RESET, materials.attack_dmg);
+        clear_screen_CONTINUE();
+        monster_attack(*chosen_monster);
     }
     else{
         printf(BOLD " ATTACK MISSED\n" RESET);
-        //counterattack
+        clear_screen_CONTINUE();
+        monster_attack(*chosen_monster);
     }
 
     clear_screen_CONTINUE();
@@ -1325,7 +1361,7 @@ Fighting_state can_i_win(Monster chosen_mon){
     return F_STATE_LEAVE;
 }
 
-void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name){ //ai cuz na tohlecto nemam
+void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name){ //ai cuz na tohlecto uz nemam
     if (max_amount <= 0) return;
 
     int amount; //int amount = (rand() % 11 > 5) ? max_amount : (max_amount - 1);
@@ -1345,7 +1381,7 @@ void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *it
     }
 }
 
-Fighting_state tameing(){
+Fighting_state tameing(Monster chosen_mon){
     system("cls");
     if(materials.bones >0){
         int doitame = 10;
@@ -1372,8 +1408,9 @@ Fighting_state tameing(){
         else{
             printf(RED " WOLF NOT TAMED. TRY AGAIN?\n CONSUMED 1 BONES\n" RESET);
             materials.bones = materials.bones -1;
-            return F_STATE_MENU;
-            //counterattack
+            clear_screen_CONTINUE();
+            monster_attack(chosen_mon);
+            return F_STATE_MENU;  
         }   
     }
     else{
@@ -1381,3 +1418,62 @@ Fighting_state tameing(){
         return F_STATE_MENU;
     }
 }
+
+void calc_equipment(){
+    if(materials.d_sword > 0){
+        materials.attack_dmg = D_SWORD_DMG;
+    }
+    else if(materials.i_sword > 0){
+        materials.attack_dmg = I_SWORD_DMG;
+    }
+    else{
+        materials.attack_dmg = BAREHANDED_DMG;
+    }
+
+    materials.protection_armor = 0.0f;
+    materials.protection_armor += better_armor(materials.d_helmet, materials.i_helmet);
+    materials.protection_armor += better_armor(materials.d_chestplate, materials.i_chestplate);
+    materials.protection_armor += better_armor(materials.d_leggings, materials.i_leggings);
+    materials.protection_armor += better_armor(materials.d_boots, materials.i_boots);
+}
+
+float better_armor(int d_variant, int i_variant){
+    return (d_variant) ? D_ARMOR_PIECE : (i_variant) ? I_ARMOR_PIECE : 0.0f;
+}
+
+void monster_attack(Monster chosen_monster){
+    printf(" %s attacks back!\n", chosen_monster.name);
+    int tmp = rand() %10;
+    tmp -= materials.protection_armor;
+    tmp += chosen_monster.xtra_accuracy;
+
+    if(tmp > 5){
+        materials.player_hp_fighting -= chosen_monster.attack_dmg;
+        printf( RED" Took %.1f damage from %s" RESET, chosen_monster.attack_dmg, chosen_monster.name);
+    }
+    else{
+        printf( GREEN " %s's attack didnt even hurt" RESET, chosen_monster.name);
+    }
+
+    is_death();
+
+}
+
+int is_death(){
+    if(materials.player_hp_fighting <= 0){
+        system("cls");
+        printf( BOLD RED" YOU DIED\n %s dont give up just yet!" RESET, materials.P_name);
+
+            clear_screen_CONTINUE(); //redo later
+            exit(0);
+
+        materials.current_F_state = F_STATE_LEAVE;
+        materials.current_status = STATE_MENU;
+        return 1;
+    }
+    else{
+        return 0;
+    }
+    
+}
+
