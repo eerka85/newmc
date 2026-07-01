@@ -237,6 +237,8 @@ void monster_attack(Monster chosen_monster);
 
 int dodge_TANK();
 int dmg_TANK();
+void TANK_dmges_u(int decide_chance, int i_armor_count, int * PLAYER_lives, int tank_attack_dmg);
+void praying(int * PLAYER_lives);
 State tank_fight();
 
 
@@ -1620,6 +1622,7 @@ int dodge_TANK(){
 	}	
 	
 }
+
 int dmg_TANK(){ //vracet dmg
 	//pocitat milisekundy od 321 ted?
 	struct timeval start, stop;
@@ -1680,6 +1683,49 @@ int dmg_TANK(){ //vracet dmg
 	
 }
 
+void TANK_dmges_u(int decide_chance, int i_armor_count, int * PLAYER_lives, int tank_attack_dmg){
+    printf(YELLOW"\n The tank fires at you");
+    Sleep(500);
+    decide_chance = rand() % 100;
+    decide_chance = decide_chance - (i_armor_count*10); //idk jesti fachci - melo by zmensut sanci na hit
+    if(decide_chance >30){
+        printf(RED "\n The tank round hits you and you scream in pain!"RESET);
+        if(materials.protection_armor < TANK_DAMAGE_TRESHOLD){ //new
+            printf(RED "\n You lose %dhp"RESET, tank_attack_dmg);
+            *PLAYER_lives = *PLAYER_lives - tank_attack_dmg;
+        }
+        else{ 
+            printf(RED "\n You lose %dhp"RESET, tank_attack_dmg / 2);
+            *PLAYER_lives = *PLAYER_lives - tank_attack_dmg / 2;
+        }
+    }
+    else{
+        printf("\n The tanks attack didnt hurt");
+    }
+    Sleep(500);
+}
+
+void praying(int * PLAYER_lives){
+    printf(YELLOW "\n You use this chance to pray to BENJAMIN NETENYAHU" RESET);
+    printf("\n.");
+    Sleep(500);
+    printf("\n.");
+    Sleep(500);
+    printf("\n.");
+    Sleep(500);
+    printf("\n.");
+    Sleep(500);
+
+    int decide_chance = rand() % 100;
+    if(decide_chance > 65){
+        printf(GREEN "\n The jewish spirit within you blooms\n Healed 1 HP!" RESET); //hava nagila or sum shit
+        (*PLAYER_lives)++;
+    }
+    else{
+        printf(RED "\n Nothing happends..." RESET);
+    }
+}
+
 State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING SHIT ASS CODE
 	int PLAYER_lives = 4;				//PLAYER
 	int max_PLAYER_lives = PLAYER_lives;
@@ -1701,7 +1747,8 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
 
 
     if(handle_starter_tank_menu()) return STATE_BOSS;	
-    system("cls");
+
+    system("cls"); //uvod 
 	printf(YELLOW "\n Behind one of the hills appears.... " RESET);
 	Sleep(2000);
 	printf(RED "A 128mm long cannon???" RESET);
@@ -1716,7 +1763,7 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
             clear_screen_CONTINUE();
 			return STATE_MENU;
 		}
-		if(PLAYER_lives > 4){ //too much HP
+		if(PLAYER_lives > 4){ //too much HP 
 			PLAYER_lives = 4;
 		}
 		
@@ -1807,25 +1854,7 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
 
 				switch(PLAYER_decision_roud){
 					case 1:
-						printf(YELLOW"\n The tank attempts to fire at you");
-                        Sleep(500);
-						decide_chance = rand() % 100;
-						decide_chance = decide_chance - (i_armor_count*10); //idk jesti fachci - melo by zmensut sanci na hit
-						if(decide_chance >30){
-							printf(RED "\n The tank fires and the tank round hits you!"RESET);
-							if(materials.protection_armor < TANK_DAMAGE_TRESHOLD){ //new
-								printf(RED "\n You lose %dhp"RESET, tank_attack_dmg);
-								PLAYER_lives = PLAYER_lives - tank_attack_dmg;
-							}
-							else{ 
-								printf(RED "\n You lose %dhp"RESET, tank_attack_dmg / 2);
-								PLAYER_lives = PLAYER_lives - tank_attack_dmg / 2;
-							}
-						}
-						else{
-								printf("\n The tank missed");
-						}
-                        Sleep(500);
+						TANK_dmges_u(decide_chance, i_armor_count, &PLAYER_lives, tank_attack_dmg);
 
 						printf("\n Your turn to attack! give him back what he deserves!");
                         Sleep(500);
@@ -1845,22 +1874,7 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
 							printf("\n The TANKs attack just barely missed you!");
 						}
 						else if(dodge == 0){
-							decide_chance = rand() % 100;
-							decide_chance = decide_chance - (i_armor_count*10); //idk jesti fachci - melo by zmensut sanci na hit
-							if(decide_chance >30){
-								printf(RED "\n The tank fires and the tank round hits you!"RESET);
-								if(materials.protection_armor < TANK_DAMAGE_TRESHOLD){ //new
-									printf(RED "\n You lose %dhp"RESET, tank_attack_dmg);
-									PLAYER_lives = PLAYER_lives - tank_attack_dmg;
-								}
-								else{ 
-									printf(RED "\n You lose %dhp"RESET, tank_attack_dmg / 2);
-									PLAYER_lives = PLAYER_lives - tank_attack_dmg / 2;
-								}
-							}	
-							else{
-								printf("\n The tank missed");
-							}
+							TANK_dmges_u(decide_chance, i_armor_count, &PLAYER_lives, tank_attack_dmg);
 						}
                         Sleep(500);
 						printf("\n Your turn to attack! give him back what he deserves!");
@@ -1868,44 +1882,8 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
 						clear_screen_CONTINUE();
 					break;
 					case 3:
-						printf(YELLOW"\n The tank attempts to fire at you");
-                        Sleep(500);
-						decide_chance = rand() % 100;
-						decide_chance = decide_chance - (i_armor_count*10); //idk jesti fachci - melo by zmensut sanci na hit
-						if(decide_chance >30){
-							printf(RED "\n The tank fires and the tank round hits you!"RESET);
-							if(materials.protection_armor < TANK_DAMAGE_TRESHOLD){
-								printf(RED "\n You lose %dhp"RESET, tank_attack_dmg);
-								PLAYER_lives = PLAYER_lives - tank_attack_dmg;
-							}
-							else{ 
-								printf(RED "\n You lose %dhp"RESET, tank_attack_dmg / 2);
-								PLAYER_lives = PLAYER_lives - tank_attack_dmg / 2;
-							}
-						}
-						else{
-							printf("\n The tank missed");
-						}
-                        Sleep(500);
-
-						printf(YELLOW "\n You use this chance to pray to BENJAMIN NETENYAHU" RESET);
-						printf("\n.");
-						Sleep(500);
-						printf("\n.");
-						Sleep(500);
-						printf("\n.");
-						Sleep(500);
-						printf("\n.");
-						Sleep(500);
-
-						decide_chance = rand() % 100;
-						if(decide_chance > 65){
-							printf(GREEN "\n The jewish spirit within you blooms\n Healed 1 HP!" RESET); //hava nagila or sum shit
-							PLAYER_lives++;
-						}
-						else{
-							printf(RED "\n Nothing happends..." RESET);
-						}
+						TANK_dmges_u(decide_chance, i_armor_count, &PLAYER_lives, tank_attack_dmg);
+                        praying(&PLAYER_lives);
 					break;
 				}
                 clear_screen_CONTINUE();
