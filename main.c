@@ -515,6 +515,7 @@ int main(){
                     break;
                     case STATE_TANK:
                         materials.current_status = tank_fight();
+                        system("cls"); //cuz if u chicken out
                     break;
                     case STATE_ASSASSIN:
                         system("cls");
@@ -543,15 +544,13 @@ int main(){
             //   INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY   
 
             case STATE_INVENTORY:
-                system("cls");
                 print_inventory();
-                clear_screen_CONTINUE();
                 materials.current_status = STATE_MENU;
             break;
 
             case STATE_HEAL:
                 system("cls");
-                encounter(wolf);
+
                 clear_screen_CONTINUE();
                 materials.current_status = STATE_MENU;
             break;
@@ -977,6 +976,7 @@ int handle_starter_tank_menu(){
         }
     }
 }
+
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives){
     system("cls");
     while(1){
@@ -1058,6 +1058,7 @@ void print_menu(Menu printed_MENU){
 }
 
 void print_inventory(){
+    system("cls");
     printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
     printf(RED    " Health:           %d/10\n" RESET, materials.player_hp_fighting);
     printf(YELLOW " Logs:             %d\n" RESET, materials.wood);
@@ -1082,6 +1083,8 @@ void print_inventory(){
     printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
 
     printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
+    clear_screen_CONTINUE();
+
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1312,7 +1315,6 @@ void diamond_mine() {
 void plains(){
 
     if(materials.call_of_the_night >0){
-        system("cls");
         printf( YELLOW " Its a brand new day!" RESET);
         Sleep(50);
         clear_screen_CONTINUE();
@@ -1320,7 +1322,6 @@ void plains(){
         else encounter(wolf);
     }
     else{
-        system("cls");
         printf( RED " The night calls for you (yea you're screwed...)" RESET);
         Sleep(50);
         clear_screen_CONTINUE();
@@ -1726,6 +1727,7 @@ void praying(int * PLAYER_lives){
     }
 }
 
+
 State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING SHIT ASS CODE
 	int PLAYER_lives = 4;				//PLAYER
 	int max_PLAYER_lives = PLAYER_lives;
@@ -1759,7 +1761,7 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
 	do{
 		if(MAUS_lives <=0){ //win
 			printf(BOLD GREEN "\n You managed to defeat the TANK boss, congratulations..." RESET);
-            materials.no_of_TANKs_defeated ++;
+            materials.no_of_TANKs_defeated++;
             clear_screen_CONTINUE();
 			return STATE_MENU;
 		}
@@ -1892,5 +1894,8 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
 
 
 	} while(PLAYER_lives > 0); //main do while cycyle end
-	is_death();
+	materials.player_hp_fighting = 0;
+    is_death();
 }
+
+
