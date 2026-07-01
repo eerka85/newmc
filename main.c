@@ -1,5 +1,5 @@
 //TODO: death + coins, save, storage + pets
-//ai writing counter ----2---- (stinky)
+//ai writing counter ----2.5---- (stinky)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,6 +60,7 @@ typedef enum {
         STATE_STORAGE,
         STATE_PETS,
     STATE_LEAVE,
+    STATE_SAVE,
     STATE_ERR
 } State;
 
@@ -137,7 +138,7 @@ typedef struct {
 } Menu;
 
 typedef struct {
-    const char * P_name;
+    char P_name[32];
     int no_of_TANKs_defeated;
 	float player_hp_fighting;
 	int bones;
@@ -242,7 +243,8 @@ void praying(int * PLAYER_lives);
 State tank_fight();
 
 
-
+void resolve_unnamed();
+int saving();
 
 
 
@@ -580,7 +582,13 @@ int main(){
             case STATE_LEAVE:
                 system("cls");
                 printf("leaving\n");
+                clean_buffer();
                 clear_screen_CONTINUE();
+            break;
+
+            case STATE_SAVE:
+                if(saving()) return 1;
+                materials.current_status = STATE_LEAVE;
             break;
 
             case STATE_ERR:
@@ -676,7 +684,7 @@ State handle_MAIN_menu(){ //prints then checks for input using move in menu
         system("cls");
         switch(main_menu.pos_menu){
             case 0:
-                return STATE_LEAVE;
+                return STATE_SAVE;
             break;
 
             case 1:
@@ -1007,6 +1015,7 @@ int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int m
         }
     }
 }
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //               BASIC FUNCTIONS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1899,3 +1908,40 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
 }
 
 
+
+void resolve_unnamed(){
+    if(strcmp(materials.P_name, "unnamed one") == 0){
+        printf("Dont have a name yet? (pathetic)\nPlease chose your name: ");
+        while(1){
+            input_string(materials.P_name, sizeof(materials.P_name), "");
+            if(strcmp(materials.P_name, "unnamed one") != 0) break;
+        }
+    }
+}
+
+int saving() {
+    system("cls"); 
+    resolve_unnamed();
+
+    // Fixed array large enough to hold Name (32) + ".bin" (4) + Null terminator (1)
+    char actual_file_name[37]; 
+
+
+    strcpy(actual_file_name, materials.P_name);
+    strcat(actual_file_name, ".bin");
+
+
+    FILE *P_saving_file = fopen(actual_file_name, "wb");
+    if (P_saving_file == NULL) {
+        perror("Failed to make save");
+        return 1; 
+    }
+
+
+    fwrite(&materials, sizeof(Materials), 1, P_saving_file);
+    fclose(P_saving_file);
+    
+    printf("Game saved successfully as %s!\n", actual_file_name);
+    clear_screen_CONTINUE();
+    return 0; 
+}
