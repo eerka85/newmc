@@ -145,6 +145,7 @@ typedef struct {
     char P_name[32];
     int no_of_TANKs_defeated;
     int no_of_SAMURAI_defeated;
+    int no_of_MAGES_defeated;
 	float player_hp_fighting;
 	int bones;
 	int leather;
@@ -187,6 +188,7 @@ typedef struct {
     Crafting_materials loottable;
 } Monster;
 
+
 //=======================================================
 //                 FUNCTIONS DECLARATION
 //=======================================================
@@ -205,8 +207,13 @@ State handle_enter_game_menu();
 State handle_save_and_leave();
 Fighting_state handle_encounter_menu(Monster chosen_monster);
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives);
+
 int handle_samurai_PATACK(int boss_hp, int player_hp);
 int handle_samurai_BOSSS_attack(int boss_hp, int player_hp);
+
+int handle_mage_BOSS_atorleave();
+int handle_mage_attacks_u();
+
 
 void clean_buffer();
 int input_int(int min, int max);
@@ -252,6 +259,9 @@ void praying(int * PLAYER_lives);
 State tank_fight();
 
 State samurai_fight();
+
+void colours(char crystal);
+State mage_fight();
 
 
 void resolve_unnamed();
@@ -336,6 +346,18 @@ Menu samurai_BOSSS_attack = {
     2,
     0
 };
+Menu mage_at_or_leave = {
+    "what will you do?",
+    { {"1. ATTACK"}, {"0. TRY TO ESCAPE"} },
+    2,
+    0
+};
+Menu mage_attack_u = {
+    "The mage is preparing his next attack!",
+    { {"1. ATTACK"}, {"2. DODGE"}, {"3. DEFEND"} },
+    3,
+    0
+};
 Menu enter_game = {
     "MINECRAFT ADVENTURE IN C",
     { {"1. Start new game"}, {"2. Load existing game"}, {"3. Quit"} },
@@ -358,6 +380,7 @@ Materials materials = {
     .P_name = "unnamed one",
     .no_of_TANKs_defeated = 0,
     .no_of_SAMURAI_defeated = 0,
+    .no_of_MAGES_defeated = 0,
     .player_hp_fighting = 10.0f,
     .bones = 50,
     .leather = 0,
@@ -549,10 +572,7 @@ int main(){
                         materials.current_status = samurai_fight();
                     break;
                     case STATE_MAGE:
-                        system("cls");
-                        printf("MAGE\n");
-                        clear_screen_CONTINUE();
-                        materials.current_status = STATE_BOSS;
+                        materials.current_status = mage_fight();
                     break;
                     case STATE_TANK:
                         materials.current_status = tank_fight();
@@ -1131,6 +1151,7 @@ int handle_samurai_BOSSS_attack(int boss_hp, int player_hp){
     }
 }
 
+
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives){
     system("cls");
     while(1){
@@ -1156,6 +1177,56 @@ int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int m
                 
                 default:
                     exit(1);
+                break;
+            }
+        }
+    }
+}
+
+int handle_mage_BOSS_atorleave(){
+    system("cls");
+    while(1){
+        print_menu(mage_at_or_leave);
+        if(move_in_menu(&mage_at_or_leave)){
+            system("cls");
+            switch(mage_at_or_leave.pos_menu){
+                case 0:
+                    return 1;
+                break;
+
+                case 1:
+                    return 0;
+                break;
+                
+                default:
+                    return 0;
+                break;
+            }
+        }
+    }
+}
+
+int handle_mage_attacks_u(){
+    system("cls");
+    while(1){
+        print_menu(mage_attack_u);
+        if(move_in_menu(&mage_attack_u)){
+            system("cls");
+            switch(mage_attack_u.pos_menu){
+                case 0:
+                    return 1;
+                break;
+
+                case 1:
+                    return 2;
+                break;
+
+                case 2:
+                    return 3;
+                break;
+                
+                default:
+                    return 1;
                 break;
             }
         }
@@ -2162,6 +2233,192 @@ State samurai_fight(){
         }
 
         clear_screen_CONTINUE();
+    }
+}
+
+void colours (char crystal) {
+    switch (crystal) {
+        case 'R':
+            printf(RED "Crystal is Red " RESET);
+            break;
+        case 'P':
+            printf(PURPLE "Crystal is Purple " RESET);
+            break;
+        case 'B':
+            printf(BLUE "Crystal is Blue " RESET);
+            break;
+    }
+}
+
+State mage_fight(){
+    int boss_hp = 100;
+    int player_hp = 100;
+
+    int p_attack = 0;
+    int damage = 0;
+    int p_crit_chance = 0;
+    int p_dodge_chance = 0;
+    int b_crit_chance = 0;
+    int b_dodge_chance = 0;
+    int i_armor = 0;
+    int d_armor = 0;
+    int attack = 0;
+    int cycle = 0;
+    int round = 0;
+    int crystal1_hp = 30;
+    int crystal2_hp = 30;
+    int crystal3_hp = 30;
+
+    calc_equipment();
+    int i_armor_count = materials.i_helmet + materials.i_chestplate + materials.i_leggings + materials.i_boots;
+    int d_armor_count = materials.d_helmet + materials.d_chestplate + materials.d_leggings + materials.d_boots;
+
+    int colour_1 = rand() % 3 + 1;
+    int colour_2 = rand() % 3 + 1;
+    int colour_3 = rand() % 3 + 1;
+
+    char crystal_1 = (colour_1 == 1) ? 'R' : (colour_1 == 2) ? 'P' : 'B';
+    char crystal_2 = (colour_2 == 1) ? 'R' : (colour_2 == 2) ? 'P' : 'B';
+    char crystal_3 = (colour_3 == 1) ? 'R' : (colour_3 == 2) ? 'P' : 'B';
+
+    char crystal[3] = {crystal_1, crystal_2, crystal_3};
+
+
+    system("cls");
+    printf(CYAN "The mage used magic to block your attack!\n" RESET);
+    Sleep(800);
+    printf(CYAN "The mage has casted his HP crystals, break his crystals to kill him!\n" RESET);
+    Sleep(800);
+    printf(BLUE "If a crystal is BLUE, the mage casted an ice attack, you need to DEFEND!\n" RESET);
+    Sleep(800);
+    printf(RED "If a crystal is RED, the mage casted a fire attack, you need to DODGE!\n" RESET);
+    Sleep(800);
+    printf(PURPLE "If a crystal is PURPLE, the mage casted a shadow attack, you need to ATTACK!\n" RESET);
+    Sleep(800);
+    printf(YELLOW "Quick! Memorise the colours of the crystals!\n" RESET);
+    Sleep(800);
+    printf(YELLOW "The crystals are:\n" RESET);
+    colours(crystal[0]);
+    colours(crystal[1]);
+    colours(crystal[2]);
+	printf ("\n");
+	clear_screen_CONTINUE();
+
+    while (boss_hp > 0 && player_hp > 0) {
+        p_crit_chance = rand() % 100;
+        b_crit_chance = rand() % 100; 
+
+        if (boss_hp <= 0) {
+            printf(GREEN "\nYou defeated the great mage!\n" RESET);
+            clear_screen_CONTINUE();
+            materials.no_of_MAGES_defeated++;
+            return STATE_BOSS;
+        }
+        
+        if (round > 0 && round % 3 == 0) {
+            crystal[0] = (rand() % 3 == 0) ? 'R' : (rand() % 2 == 0) ? 'P' : 'B';
+            crystal[1] = (rand() % 3 == 0) ? 'R' : (rand() % 2 == 0) ? 'P' : 'B';
+            crystal[2] = (rand() % 3 == 0) ? 'R' : (rand() % 2 == 0) ? 'P' : 'B';
+			printf ("\n");
+            colours(crystal[0]);
+            colours(crystal[1]);
+            colours(crystal[2]);
+            printf ("\n");
+            clear_screen_CONTINUE();
+        }
+        p_attack = handle_mage_BOSS_atorleave();
+        switch (p_attack) {
+            case 1:
+                damage = 1;
+                if (materials.d_sword > 0) {
+                    damage += 3;
+                } else if (materials.i_sword > 0) {
+                    damage += 1;
+                }
+                if (p_crit_chance <= 20) {
+                    damage *= 2;
+                    printf(GREEN "Critical Hit! You dealt %d damage.\n" RESET, damage);
+                    } 
+                    else {
+                    printf(GREEN "You dealt %d damage.\n" RESET, damage);
+
+                }
+                printf(RED "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
+                if (crystal1_hp > 0) {
+                    crystal1_hp -= damage;
+                }
+                else if (crystal2_hp > 0) {
+                    crystal2_hp -= damage;
+                }
+                else if (crystal3_hp > 0) {
+                    crystal3_hp -= damage;
+                }
+                if (crystal1_hp <= 0 && crystal2_hp <= 0 && crystal3_hp <= 0) {
+                    boss_hp = 0;
+                    continue;
+                }
+                printf(RED"1. crystal HP: %d\n2. crystal HP: %d\n3. crystal HP: %d\n" RESET, crystal1_hp, crystal2_hp, crystal3_hp);
+                clear_screen_CONTINUE();
+            break;
+
+            case 0:
+                if (b_crit_chance <= 20) {
+                    damage = 10;
+                    player_hp -= damage;
+                    printf(RED "Boss lands a hit while you try to escape! You took %d damage.\n" RESET, damage);
+                } else if (b_crit_chance <= 60) {
+                    damage = 5;
+                    player_hp -= damage;
+                    printf(RED "Boss lands a hit while you try to escape! You took %d damage.\n" RESET, damage);
+                } else {
+                    damage = 0;
+                    printf(GREEN "Boss tried to hit you while you escaped but missed!\n" RESET);
+                    clear_screen_CONTINUE();
+                    return STATE_MENU;
+                }
+                clear_screen_CONTINUE();
+            break;
+        }
+        p_attack = handle_mage_attacks_u();
+        switch (p_attack) {
+            // Blue - Defend, Red - Dodge, Purple - Attack
+        case 1:
+            if (crystal[cycle % 3] == 'P') {
+                printf(GREEN "You successfully countered the shadow attack!\n" RESET);
+            }
+            else {
+                damage = 2;
+                player_hp -= damage;
+                printf(RED "Counter failed! You took %d damage.\n" RESET, damage);
+            }
+        break;
+
+        case 2:
+            if (crystal[cycle % 3] == 'R') {
+                printf(GREEN "You successfully dodged the fire attack!\n" RESET);
+            }
+            else {
+                damage = 2;
+                player_hp -= damage;
+                printf(RED "Dodge failed! You took %d damage.\n" RESET, damage);
+            }
+        break;
+
+        case 3:
+            if (crystal[cycle % 3] == 'B') {
+                printf(GREEN "You successfully defended the ice attack!\n" RESET);
+            }
+            else {
+                damage = 2;
+                player_hp -= damage;
+                printf(RED "Defend failed! You took %d damage.\n" RESET, damage);
+            }
+        break;
+        }
+        clear_screen_CONTINUE();
+        cycle++;
+        round++;
+        attack++;
     }
 }
 
