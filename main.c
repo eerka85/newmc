@@ -64,6 +64,7 @@ typedef enum {
     STATE_SAVE,
     STATE_LOAD,
     STATE_ENTER_GAME,
+    STATE_DEATH,
     STATE_ERR
 } State;
 
@@ -143,6 +144,7 @@ typedef struct {
 typedef struct {
     char P_name[32];
     int no_of_TANKs_defeated;
+    int no_of_SAMURAI_defeated;
 	float player_hp_fighting;
 	int bones;
 	int leather;
@@ -203,6 +205,8 @@ State handle_enter_game_menu();
 State handle_save_and_leave();
 Fighting_state handle_encounter_menu(Monster chosen_monster);
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives);
+int handle_samurai_PATACK(int boss_hp, int player_hp);
+int handle_samurai_BOSSS_attack(int boss_hp, int player_hp);
 
 void clean_buffer();
 int input_int(int min, int max);
@@ -246,6 +250,8 @@ int dmg_TANK();
 void TANK_dmges_u(int decide_chance, int i_armor_count, int * PLAYER_lives, int tank_attack_dmg);
 void praying(int * PLAYER_lives);
 State tank_fight();
+
+State samurai_fight();
 
 
 void resolve_unnamed();
@@ -318,7 +324,18 @@ Menu tank_menu = {
     3,
     0
 };
-
+Menu samurai_PATAK = {
+    "Your turn - what will you do?",
+    { {"1. ATTACK"}, {"0. TRY TO ESCAPE"} },
+    2,
+    0
+};
+Menu samurai_BOSSS_attack = {
+    "The samurai attacks - what will you do?",
+    { {"1. TRY TO DODGE"}, {"0. BLOCK"} },
+    2,
+    0
+};
 Menu enter_game = {
     "MINECRAFT ADVENTURE IN C",
     { {"1. Start new game"}, {"2. Load existing game"}, {"3. Quit"} },
@@ -340,6 +357,7 @@ Menu save_and_leave_game = {
 Materials materials = {
     .P_name = "unnamed one",
     .no_of_TANKs_defeated = 0,
+    .no_of_SAMURAI_defeated = 0,
     .player_hp_fighting = 10.0f,
     .bones = 50,
     .leather = 0,
@@ -505,23 +523,17 @@ int main(){
             break;
 
                 case STATE_WOOD:
-                    system("cls");
                     wood_mine();
-                    clear_screen_CONTINUE();
                     materials.current_status = STATE_MINE;
                 break;
 
                 case STATE_IRON:
-                    system("cls");
                     iron_mine();
-                    clear_screen_CONTINUE();
                     materials.current_status = STATE_MINE;
                 break;
 
                 case STATE_DIAMONDS:
-                    system("cls");
                     diamond_mine();
-                    clear_screen_CONTINUE();
                     materials.current_status = STATE_MINE;
                 break;
             
@@ -534,10 +546,7 @@ int main(){
                     materials.current_status = handle_boss_menu();
                 break;
                     case STATE_SAMURAI:
-                        system("cls");
-                        printf("SAMURAI\n");
-                        clear_screen_CONTINUE();
-                        materials.current_status = STATE_BOSS;
+                        materials.current_status = samurai_fight();
                     break;
                     case STATE_MAGE:
                         system("cls");
@@ -556,10 +565,13 @@ int main(){
                         materials.current_status = STATE_BOSS;
                     break;
                     case STATE_RANDOM_BOSS:
-                        system("cls");
-                        printf("RANDOM BOSS\n");
-                        clear_screen_CONTINUE();
-                        materials.current_status = STATE_BOSS;
+                        int tmp_rand_boss = rand() % 4;
+                        switch(tmp_rand_boss){
+                            case 0: materials.current_status = STATE_SAMURAI; break;
+                            case 1: materials.current_status = STATE_MAGE; break;
+                            case 2: materials.current_status = STATE_TANK; break;
+                            case 3: materials.current_status = STATE_ASSASSIN; break;
+                        }
                     break;
                 case STATE_EXPLORE_PLAINS:
                     system("cls");
@@ -582,7 +594,6 @@ int main(){
 
             case STATE_HEAL:
                 system("cls");
-
                 clear_screen_CONTINUE();
                 materials.current_status = STATE_MENU;
             break;
@@ -615,9 +626,15 @@ int main(){
     
             case STATE_LEAVE:
                 system("cls");
-                printf("leaving\n");
+                printf("yea i dont think ts works\n");
                 clean_buffer();
                 clear_screen_CONTINUE();
+            break;
+
+            case STATE_DEATH:
+                system("cls");
+                printf( BOLD RED" YOU DIED\n %s dont give up just yet!" RESET, materials.P_name);
+                exit(0);
             break;
 
             case STATE_SAVE:
@@ -638,7 +655,8 @@ int main(){
     //   MAIN CYCLE END
     //###################
     system("cls");
-
+    printf("leaving\n");
+    clear_screen_CONTINUE();
 
     return 0;
 }
@@ -1065,6 +1083,54 @@ int handle_starter_tank_menu(){
     }
 }
 
+int handle_samurai_PATACK(int boss_hp, int player_hp){
+    system("cls");
+    while(1){
+        printf(CYAN "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
+        print_menu(samurai_PATAK);
+        if(move_in_menu(&samurai_PATAK)){
+            system("cls");
+            switch(samurai_PATAK.pos_menu){
+                case 0:
+                    return 1;
+                break;
+
+                case 1:
+                    return 0;
+                break;
+                
+                default:
+                    return 0;
+                break;
+            }
+        }
+    }
+}
+
+int handle_samurai_BOSSS_attack(int boss_hp, int player_hp){
+    system("cls");
+    while(1){
+        printf(CYAN "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
+        print_menu(samurai_BOSSS_attack);
+        if(move_in_menu(&samurai_BOSSS_attack)){
+            system("cls");
+            switch(samurai_BOSSS_attack.pos_menu){
+                case 0:
+                    return 1;
+                break;
+
+                case 1:
+                    return 0;
+                break;
+                
+                default:
+                    return 0;
+                break;
+            }
+        }
+    }
+}
+
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives){
     system("cls");
     while(1){
@@ -1173,6 +1239,7 @@ void print_inventory(){
     printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
 
     printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
+    printf(BOLD YELLOW " SAMURAI DEFEATED:       %d\n" RESET, materials.no_of_SAMURAI_defeated);
     clear_screen_CONTINUE();
 
 }
@@ -1323,6 +1390,7 @@ void crafting_jew(Crafting_item recipe){
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void wood_mine(){
+    system("cls");
 	int chance_wood = rand () % 100;
 	if(materials.d_axe >= 1){
 		chance_wood = chance_wood - 20;
@@ -1349,9 +1417,11 @@ void wood_mine(){
 			printf(YELLOW "You got 1 log" RESET);
 		}
 	}
+    clear_screen_CONTINUE();
 }
 
 void iron_mine () {
+    system("cls");
 	int chance_iron = rand () % 100;
 	if(materials.d_pickaxe >= 1){
 		chance_iron = chance_iron - 20;
@@ -1372,9 +1442,11 @@ void iron_mine () {
 		materials.iron += 0;
 		printf(RED "You got unlucky... 0 iron" RESET);
 	}
+    clear_screen_CONTINUE();
 }
 
 void diamond_mine() {
+    system("cls");
 	int chance_diamonds = rand () % 100;
 	if(materials.d_pickaxe >= 1){
 		chance_diamonds = chance_diamonds - 20;
@@ -1396,6 +1468,7 @@ void diamond_mine() {
 		materials.diamonds += 0;
 		printf(RED "You got unlucky... you should give it one more shot!" RESET);
 	}
+    clear_screen_CONTINUE();
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1626,14 +1699,8 @@ void monster_attack(Monster chosen_monster){
 
 int is_death(){
     if(materials.player_hp_fighting <= 0){
-        system("cls");
-        printf( BOLD RED" YOU DIED\n %s dont give up just yet!" RESET, materials.P_name);
-
-            clear_screen_CONTINUE(); //redo later
-            exit(0);
-
         materials.current_F_state = F_STATE_LEAVE;
-        materials.current_status = STATE_MENU;
+        materials.current_status = STATE_DEATH;
         return 1;
     }
     else{
@@ -1988,6 +2055,115 @@ State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING
     is_death();
 }
 
+State samurai_fight(){
+    int boss_hp = 100;
+    int player_hp = 100;
+    printf(CYAN "You are fighting against the samurai...\n" RESET);
+    clear_screen_CONTINUE();
+    calc_equipment();
+    int i_armor_count = materials.i_helmet + materials.i_chestplate + materials.i_leggings + materials.i_boots;
+    int d_armor_count = materials.d_helmet + materials.d_chestplate + materials.d_leggings + materials.d_boots;  
+
+    while(1){
+        int p_attack = 0;
+        int damage = 0;
+        int p_crit_chance = 0;
+        int p_dodge_chance = 0;
+        int b_crit_chance = 0;
+        int b_dodge_chance = 0; 
+
+        p_crit_chance  = rand() % 100;
+        p_dodge_chance = rand() % 100;
+        b_crit_chance  = rand() % 100;
+        b_dodge_chance = rand() % 100;
+        
+        
+         
+        switch(handle_samurai_PATACK(boss_hp, player_hp)){
+            case 1:
+                damage = 1;
+                if (materials.d_sword > 0) {
+                    damage += 3;
+                } else if (materials.i_sword > 0) {
+                    damage += 1;
+                }
+                if (p_crit_chance <= 20) {
+                    damage *= 2;
+                    printf(GREEN "Critical Hit! You dealt %d damage.\n" RESET, damage);
+                } else {
+                    printf(GREEN "You dealt %d damage.\n" RESET, damage);
+                }
+                boss_hp -= damage;
+                printf(RED "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);  
+            break;
+
+            case 0:
+                damage = 0;
+                if (b_crit_chance <= 20) {
+                    damage = 10;
+                    player_hp -= damage;
+                    printf(RED "Boss lands a hit while you try to escape! You took %d damage.\n" RESET, damage);
+                    clear_screen_CONTINUE();
+                    continue;
+                } else if (b_crit_chance <= 60) {
+                    damage = 5;
+                    player_hp -= damage;
+                    printf(RED "Boss lands a hit while you try to escape! You took %d damage.\n" RESET, damage);
+                    clear_screen_CONTINUE();
+                    continue;
+                } else {
+                    damage = 0;
+                    printf(GREEN "Boss tried to hit you while you escaped but missed!\n" RESET);
+                    clear_screen_CONTINUE();
+                    return STATE_BOSS;
+                }
+            break;
+        }
+
+        clear_screen_CONTINUE();
+
+        if (player_hp <= 0) {
+        printf(RED "\nYou were defeated by the samurai!\n" RESET);
+        clear_screen_CONTINUE();
+        return STATE_DEATH;
+        } 
+        else if (boss_hp <= 0) {
+        printf(GREEN "\nYou defeated the samurai!\n" RESET);
+        clear_screen_CONTINUE();
+        materials.no_of_SAMURAI_defeated++;
+        return STATE_BOSS;
+        }
+
+        switch(handle_samurai_BOSSS_attack(boss_hp, player_hp)){
+            case 1:
+                if (p_dodge_chance <= 30) {
+                    printf(GREEN "You successfully dodged the attack!\n" RESET);
+                } else if (p_dodge_chance <= 60) {
+                    damage = 2;
+                    player_hp -= damage;
+                    printf(RED "Dodge failed! You took %d damage.\n" RESET, damage);
+                } else {
+                    damage = 5;
+                    player_hp -= damage;
+                    printf(RED "Dodge failed completely! You took %d damage.\n" RESET, damage);
+                }
+            break;
+
+            case 0:
+                if (b_crit_chance <= 20) {
+                    damage = 2;
+                    player_hp -= damage;
+                    printf(GREEN "You partially blocked the attack! Damage reduced to %d.\n" RESET, damage);
+                } else {
+                    damage = 0;
+                    printf(GREEN "You successfully blocked the attack!\n" RESET);
+                }
+            break;
+        }
+
+        clear_screen_CONTINUE();
+    }
+}
 
 
 void resolve_unnamed(){
