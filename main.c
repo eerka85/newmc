@@ -59,8 +59,11 @@ typedef enum {
         STATE_VILLAGERS,
         STATE_STORAGE,
         STATE_PETS,
+    STATE_SAVE_AND_LEAVE,
     STATE_LEAVE,
     STATE_SAVE,
+    STATE_LOAD,
+    STATE_ENTER_GAME,
     STATE_ERR
 } State;
 
@@ -196,6 +199,8 @@ State handle_fighting_menu();
     State handle_boss_menu();
 State handle_base_menu();
 State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant);
+State handle_enter_game_menu();
+State handle_save_and_leave();
 Fighting_state handle_encounter_menu(Monster chosen_monster);
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives);
 
@@ -245,6 +250,7 @@ State tank_fight();
 
 void resolve_unnamed();
 int saving();
+int loading();
 
 
 
@@ -309,6 +315,20 @@ Menu start_tank_menu = {
 Menu tank_menu = {
     "Your turn - what will you do?",
     { {"1. ATTACK twice"}, {"2. try to DODGE and then ATTACK"}, {"3. PRAY"} },
+    3,
+    0
+};
+
+Menu enter_game = {
+    "MINECRAFT ADVENTURE IN C",
+    { {"1. Start new game"}, {"2. Load existing game"}, {"3. Quit"} },
+    3,
+    0
+};
+
+Menu save_and_leave_game = {
+    "LEAVE GAME?",
+    { {"1. Save and leave"}, {"2. leave"}, {"3. Go back"} },
     3,
     0
 };
@@ -424,7 +444,7 @@ int main(){
     //###################
     //     VARIABLES
     //###################
-    materials.current_status = STATE_MENU;
+    materials.current_status = STATE_ENTER_GAME;
 
 
     //###################
@@ -433,6 +453,16 @@ int main(){
 
     while(materials.current_status != STATE_LEAVE){
         switch(materials.current_status){
+
+            case STATE_ENTER_GAME:
+                materials.current_status = handle_enter_game_menu();
+            break;
+
+            case STATE_LOAD:
+                if(loading()) return 1;
+                materials.current_status = STATE_MENU;
+            break;
+
             case STATE_MENU:
                 materials.current_status = handle_MAIN_menu();
             break;
@@ -578,6 +608,10 @@ int main(){
                     clear_screen_CONTINUE();
                     materials.current_status = STATE_BASE;
                 break;
+            
+            case STATE_SAVE_AND_LEAVE:
+                materials.current_status = handle_save_and_leave();
+            break;
     
             case STATE_LEAVE:
                 system("cls");
@@ -684,7 +718,7 @@ State handle_MAIN_menu(){ //prints then checks for input using move in menu
         system("cls");
         switch(main_menu.pos_menu){
             case 0:
-                return STATE_SAVE;
+                return STATE_SAVE_AND_LEAVE;
             break;
 
             case 1:
@@ -932,6 +966,52 @@ State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant)
     }
 }
 
+State handle_enter_game_menu(){
+    print_menu(enter_game);
+    if(move_in_menu(&enter_game)){
+        system("cls");
+        switch(enter_game.pos_menu){
+            case 0:
+                return STATE_MENU;
+            break;
+
+            case 1:
+                return STATE_LOAD;
+            break;
+
+            case 2:
+                return STATE_LEAVE;
+            break;
+        }
+    }
+    else{
+        return STATE_ENTER_GAME;
+    }
+}
+
+State handle_save_and_leave(){
+    print_menu(save_and_leave_game);
+    if(move_in_menu(&save_and_leave_game)){
+        system("cls");
+        switch(save_and_leave_game.pos_menu){
+            case 0:
+                return STATE_SAVE;
+            break;
+
+            case 1:
+                return STATE_LEAVE;
+            break;
+
+            case 2:
+                return STATE_MENU;
+            break;
+        }
+    }
+    else{
+        return STATE_SAVE_AND_LEAVE;
+    }
+}
+
 Fighting_state handle_encounter_menu(Monster chosen_monster){
     chosen_monster.print_monster();
     printf("A wild %s has appeared!\n", chosen_monster.name);
@@ -1052,6 +1132,7 @@ void clear_screen_CONTINUE(){
 	getchar();
 	system("cls");
 }
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //              MENU PRINTING
@@ -1931,7 +2012,7 @@ int saving() {
     strcat(actual_file_name, ".bin");
 
 
-    FILE *P_saving_file = fopen(actual_file_name, "wb");
+    FILE * P_saving_file = fopen(actual_file_name, "wb");
     if (P_saving_file == NULL) {
         perror("Failed to make save");
         return 1; 
@@ -1945,3 +2026,40 @@ int saving() {
     clear_screen_CONTINUE();
     return 0; 
 }
+
+int loading(){
+    system("cls");
+    char actual_file_name[37]; 
+
+    while(1){
+        input_string(actual_file_name, 32, "Enter your save name: ");
+
+        if(strcmp(actual_file_name, "unnamed")== 0){
+            printf("defaulting to a new game");
+            return 0;
+        }
+
+        strcat(actual_file_name, ".bin");
+
+        FILE * P_loading_save = fopen(actual_file_name, "rb");
+        if(P_loading_save == NULL){
+            printf("Unable to open save...\ntry again or write 'unnamed' if you dont have one");
+            clear_screen_CONTINUE();
+            fclose(P_loading_save);
+            continue;
+        }
+
+        fread(&materials, sizeof(materials), 1, P_loading_save);
+
+        fclose(P_loading_save);
+
+        printf("succesfully loaded save %s", materials.P_name);
+
+        clear_screen_CONTINUE();
+        system("cls");
+        return 0;
+    }
+
+    return 0;
+}
+
