@@ -146,6 +146,7 @@ typedef struct {
     int no_of_TANKs_defeated;
     int no_of_SAMURAI_defeated;
     int no_of_MAGES_defeated;
+    int no_of_ASSASSIN_defeated;
 	float player_hp_fighting;
 	int bones;
 	int leather;
@@ -214,6 +215,7 @@ int handle_samurai_BOSSS_attack(int boss_hp, int player_hp);
 int handle_mage_BOSS_atorleave();
 int handle_mage_attacks_u();
 
+int handle_assasin_decision(int boss_hp, int player_hp);
 
 void clean_buffer();
 int input_int(int min, int max);
@@ -262,6 +264,8 @@ State samurai_fight();
 
 void colours(char crystal);
 State mage_fight();
+
+State assassin_fight();
 
 State dice_game();
 
@@ -377,6 +381,12 @@ Menu dice_menu = {
     2,
     0
 };
+Menu assasin_decision = {
+    "The assassin has lunged towards you, where will strike?",
+    { {"1. LEFT"}, {"2. STRAIGHT"}, {"3. RIGHT"} },
+    3,
+    0
+};
 
 //=======================================================
 //                   typedef CREATION
@@ -387,6 +397,7 @@ Materials materials = {
     .no_of_TANKs_defeated = 0,
     .no_of_SAMURAI_defeated = 0,
     .no_of_MAGES_defeated = 0,
+    .no_of_ASSASSIN_defeated = 0,
     .player_hp_fighting = 10.0f,
     .bones = 0,
     .leather = 0,
@@ -585,10 +596,7 @@ int main(){
                         system("cls"); //cuz if u chicken out
                     break;
                     case STATE_ASSASSIN:
-                        system("cls");
-                        printf("ASSASSIN\n");
-                        clear_screen_CONTINUE();
-                        materials.current_status = STATE_BOSS;
+                        materials.current_status = assassin_fight();
                     break;
                     case STATE_RANDOM_BOSS:
                         int tmp_rand_boss = rand() % 4;
@@ -1266,6 +1274,34 @@ int handle_dice(){
     }
 }
 
+int handle_assasin_decision(int boss_hp, int player_hp){
+    system("cls");
+    while(1){
+        printf (RED "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
+        print_menu(assasin_decision);
+        if(move_in_menu(&assasin_decision)){
+            system("cls");
+            switch(assasin_decision.pos_menu){
+                case 0:
+                    return 1;
+                break;
+
+                case 1:
+                    return 2;
+                break;
+
+                case 2:
+                    return 3;
+                break;
+                
+                default:
+                    return 2;
+                break;
+            }
+        }
+    }
+}
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //               BASIC FUNCTIONS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1344,7 +1380,8 @@ void print_inventory(){
 
     printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
     printf(BOLD YELLOW " SAMURAI DEFEATED:       %d\n" RESET, materials.no_of_SAMURAI_defeated);
-    printf(BOLD YELLOW " MAGES DEFEATED:       %d\n" RESET, materials.no_of_MAGES_defeated);
+    printf(BOLD YELLOW " MAGES DEFEATED:         %d\n" RESET, materials.no_of_MAGES_defeated);
+    printf(BOLD YELLOW " ASSASSIN DEFEATED:      %d\n" RESET, materials.no_of_ASSASSIN_defeated);
     clear_screen_CONTINUE();
 
 }
@@ -1991,7 +2028,7 @@ void praying(int * PLAYER_lives){
 }
 
 
-State tank_fight(){  // old code from minecraft.c I am NOT REMAKING THIS FUCKING SHIT ASS CODE
+State tank_fight(){ 
 	int PLAYER_lives = 4;				//PLAYER
 	int max_PLAYER_lives = PLAYER_lives;
 	int PLAYER_decision_roud = 0;
@@ -2456,6 +2493,90 @@ State mage_fight(){
         round++;
         attack++;
     }
+}
+
+
+State assassin_fight(){
+    int boss_hp = 100;
+    int player_hp = 100;
+    int p_attack = 0;
+    int e_pos; 
+    char direction [] = {'L', 'S', 'R'};
+    int lucky_row;
+    int damage = 0;
+    char print_direction[10];
+
+
+    printf(CYAN "You are fighting against the assassin...\n" RESET);
+    clear_screen_CONTINUE();
+
+	
+    while (boss_hp > 0 && player_hp > 0) {
+
+        printf("\n The assasin is getting ready to attack");
+        getchar();
+            e_pos = rand() % 3; // 0 - left, 1 - straight, 2 - right
+            lucky_row = rand() % 10;
+        
+        for (int i = 0; i < 10; i++){ // Cues, in a line
+            if (e_pos == 0){
+                strcpy(print_direction, "LLEEFFTT");
+            
+            }
+            else if (e_pos == 1){
+                strcpy(print_direction, "STRAIGHT");
+            }
+            else {
+                strcpy(print_direction, "RRIIGGHT");
+            }
+            if (i == lucky_row){
+                printf("??#!%%^" BOLD YELLOW "%s" RESET "&$#*!\n", print_direction);
+            }
+            else {
+                printf("!!@$#*&^%%$#@!!?@%%\n");
+            }
+        }
+        Sleep (175);
+        system("cls");
+
+        p_attack = handle_assasin_decision(boss_hp, player_hp); // choose where to attack
+
+        if (p_attack == e_pos + 1){
+            printf(GREEN "You successfully hit the assassin!\n" RESET);
+            if (materials.d_sword > 0) {
+                damage = 5;
+            }
+            else if (materials.i_sword > 0) {
+                damage = 3;
+            }
+            else {
+                damage = 1;
+            }
+            boss_hp -= damage;
+        }
+        else {
+            printf(RED "You missed! The assassin strikes you!\n" RESET);
+            damage = 25;
+            player_hp -= damage;
+        }
+
+
+        if(boss_hp <= 0){
+            printf(GREEN "...\nYou successfully hit the assassin!\n" RESET);
+            materials.no_of_ASSASSIN_defeated +=1;
+            clear_screen_CONTINUE();
+            return STATE_MENU;
+        }
+        if(player_hp <= 0){
+            printf(RED "...\nYou failed to defeat the assassin :(\n" RESET);
+            clear_screen_CONTINUE();
+            return STATE_DEATH;
+        }
+
+
+        printf (RED "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
+        clear_screen_CONTINUE();
+	}
 }
 
 State dice_game(){
