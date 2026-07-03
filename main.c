@@ -263,6 +263,7 @@ State samurai_fight();
 void colours(char crystal);
 State mage_fight();
 
+State dice_game();
 
 void resolve_unnamed();
 int saving();
@@ -364,11 +365,16 @@ Menu enter_game = {
     3,
     0
 };
-
 Menu save_and_leave_game = {
     "LEAVE GAME?",
     { {"1. Save and leave"}, {"2. leave"}, {"3. Go back"} },
     3,
+    0
+};
+Menu dice_menu = {
+    "PLAY DICE WITH VILLAGER FOR FOOD?",
+    { {"1. YES"}, {"0. Go back"} },
+    2,
     0
 };
 
@@ -382,7 +388,7 @@ Materials materials = {
     .no_of_SAMURAI_defeated = 0,
     .no_of_MAGES_defeated = 0,
     .player_hp_fighting = 10.0f,
-    .bones = 50,
+    .bones = 0,
     .leather = 0,
     .wool = 0,
     .wood = 0,
@@ -613,9 +619,7 @@ int main(){
             break;
 
             case STATE_HEAL:
-                system("cls");
-                clear_screen_CONTINUE();
-                materials.current_status = STATE_MENU;
+                materials.current_status = dice_game();
             break;
 
             case STATE_BASE:
@@ -636,6 +640,10 @@ int main(){
                 case STATE_PETS:
                     system("cls");
                     printf("PETS\n");
+                    materials.diamonds += 99;
+                    materials.bones += 99;
+                    materials.iron += 99;
+                    materials.wood += 99;
                     clear_screen_CONTINUE();
                     materials.current_status = STATE_BASE;
                 break;
@@ -646,8 +654,7 @@ int main(){
     
             case STATE_LEAVE:
                 system("cls");
-                printf("yea i dont think ts works\n");
-                clean_buffer();
+                printf("you shouldnt be here\n");
                 clear_screen_CONTINUE();
             break;
 
@@ -1081,6 +1088,7 @@ Fighting_state handle_encounter_menu(Monster chosen_monster){
     }
 }
 
+
 int handle_starter_tank_menu(){
     while(1){
         printf(YELLOW "\n You walk around hilly plains and suddenly you hear a strange soud...\n" RESET);
@@ -1102,6 +1110,89 @@ int handle_starter_tank_menu(){
         }
     }
 }
+
+int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives){
+    system("cls");
+    while(1){
+        printf(RED "\n MAUS HP = %d/%d" RESET, MAUS_lives, max_MAUS_lives);
+		printf(GREEN "\n YOUR HP = %d/%d\n" RESET, PLAYER_lives, max_PLAYER_lives);
+        print_menu(tank_menu);
+        if(move_in_menu(&tank_menu)){
+            switch(tank_menu.pos_menu){
+                case 0:
+                    system("cls");
+                    return 1;
+                break;
+
+                case 1:
+                    system("cls");
+                    return 2;
+                break;
+
+                case 2:
+                    system("cls");
+                    return 3;
+                break;
+                
+                default:
+                    exit(1);
+                break;
+            }
+        }
+    }
+}
+
+
+int handle_mage_BOSS_atorleave(){
+    system("cls");
+    while(1){
+        print_menu(mage_at_or_leave);
+        if(move_in_menu(&mage_at_or_leave)){
+            system("cls");
+            switch(mage_at_or_leave.pos_menu){
+                case 0:
+                    return 1;
+                break;
+
+                case 1:
+                    return 0;
+                break;
+                
+                default:
+                    return 0;
+                break;
+            }
+        }
+    }
+}
+
+int handle_mage_attacks_u(){
+    system("cls");
+    while(1){
+        print_menu(mage_attack_u);
+        if(move_in_menu(&mage_attack_u)){
+            system("cls");
+            switch(mage_attack_u.pos_menu){
+                case 0:
+                    return 1;
+                break;
+
+                case 1:
+                    return 2;
+                break;
+
+                case 2:
+                    return 3;
+                break;
+                
+                default:
+                    return 1;
+                break;
+            }
+        }
+    }
+}
+
 
 int handle_samurai_PATACK(int boss_hp, int player_hp){
     system("cls");
@@ -1152,44 +1243,13 @@ int handle_samurai_BOSSS_attack(int boss_hp, int player_hp){
 }
 
 
-int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives){
+int handle_dice(){
     system("cls");
     while(1){
-        printf(RED "\n MAUS HP = %d/%d" RESET, MAUS_lives, max_MAUS_lives);
-		printf(GREEN "\n YOUR HP = %d/%d\n" RESET, PLAYER_lives, max_PLAYER_lives);
-        print_menu(tank_menu);
-        if(move_in_menu(&tank_menu)){
-            switch(tank_menu.pos_menu){
-                case 0:
-                    system("cls");
-                    return 1;
-                break;
-
-                case 1:
-                    system("cls");
-                    return 2;
-                break;
-
-                case 2:
-                    system("cls");
-                    return 3;
-                break;
-                
-                default:
-                    exit(1);
-                break;
-            }
-        }
-    }
-}
-
-int handle_mage_BOSS_atorleave(){
-    system("cls");
-    while(1){
-        print_menu(mage_at_or_leave);
-        if(move_in_menu(&mage_at_or_leave)){
+        print_menu(dice_menu);
+        if(move_in_menu(&dice_menu)){
             system("cls");
-            switch(mage_at_or_leave.pos_menu){
+            switch(dice_menu.pos_menu){
                 case 0:
                     return 1;
                 break;
@@ -1200,33 +1260,6 @@ int handle_mage_BOSS_atorleave(){
                 
                 default:
                     return 0;
-                break;
-            }
-        }
-    }
-}
-
-int handle_mage_attacks_u(){
-    system("cls");
-    while(1){
-        print_menu(mage_attack_u);
-        if(move_in_menu(&mage_attack_u)){
-            system("cls");
-            switch(mage_attack_u.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 2;
-                break;
-
-                case 2:
-                    return 3;
-                break;
-                
-                default:
-                    return 1;
                 break;
             }
         }
@@ -1287,7 +1320,7 @@ void print_menu(Menu printed_MENU){
 void print_inventory(){
     system("cls");
     printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
-    printf(RED    " Health:           %d/10\n" RESET, materials.player_hp_fighting);
+    printf(RED    " Health:           %.1f/10\n" RESET, materials.player_hp_fighting);
     printf(YELLOW " Logs:             %d\n" RESET, materials.wood);
     printf(YELLOW " Iron:             %d\n" RESET, materials.iron);
     printf(YELLOW " Diamonds:         %d\n" RESET, materials.diamonds);
@@ -1311,6 +1344,7 @@ void print_inventory(){
 
     printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
     printf(BOLD YELLOW " SAMURAI DEFEATED:       %d\n" RESET, materials.no_of_SAMURAI_defeated);
+    printf(BOLD YELLOW " MAGES DEFEATED:       %d\n" RESET, materials.no_of_MAGES_defeated);
     clear_screen_CONTINUE();
 
 }
@@ -1781,8 +1815,9 @@ int is_death(){
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//(from old code)   BOSSES    (kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me )
+//(from old code)   BOSSES + DICE    (kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me kill me )
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 int dodge_TANK(){
 	//zapamatovani beatu? 
 	//vygeneruje beat a b b a
@@ -2236,6 +2271,7 @@ State samurai_fight(){
     }
 }
 
+
 void colours (char crystal) {
     switch (crystal) {
         case 'R':
@@ -2422,6 +2458,73 @@ State mage_fight(){
     }
 }
 
+State dice_game(){
+    int volba_d = 0;
+	int villager_dice_roll = 0;
+	int p_dice_roll = 0;
+	int dv1;
+	int dv2;
+	int dp1;
+	int dp2;
+	volba_d = handle_dice();
+	switch(volba_d){
+		case 0:
+            system("cls");
+			return STATE_MENU;
+		break;
+		case 1:
+			while(1){
+				//vil roll - ((rand() %6)+1)
+				dv1 =((rand() %6)+1);
+				dv2 =((rand() %6)+1);
+				dice(dv1, dv2);
+				villager_dice_roll = dv1 + dv2;
+				printf(RED "\n The villager rolled %d," RESET, villager_dice_roll);
+
+				printf(GREEN "\n Your turn, press ENTER to roll: ");
+				getchar();
+				dp1 = ((rand() %6)+1);
+				dp2 = ((rand() %6)+1);
+				dice(dp1, dp2);
+				p_dice_roll = dp1 + dp2;
+				printf(RED "\n You rolled %d," RESET, p_dice_roll);
+				if(p_dice_roll > villager_dice_roll){
+					printf(GREEN "\n yay YOU WON yay\n Adding 3hp..." RESET);
+					materials.player_hp_fighting = materials.player_hp_fighting +3.0f;
+					if(materials.player_hp_fighting > 10.0f){
+						materials.player_hp_fighting = 10.0f;
+					}
+                    clear_screen_CONTINUE();
+					return STATE_MENU;
+				}
+				else if(villager_dice_roll == p_dice_roll){
+					printf(WHITE "\n Draw...\n Adding 1 hp..."RESET);
+					materials.player_hp_fighting = materials.player_hp_fighting +1.0f;
+					if(materials.player_hp_fighting > 10.0f){
+						materials.player_hp_fighting = 10.0f;
+                        clear_screen_CONTINUE();
+                        return STATE_MENU;
+					}
+					printf(YELLOW "\n TRY AGAIN? (press ENTER)" RESET);
+					getchar();
+					clear_screen_CONTINUE();
+					continue;
+				}
+				else{
+					printf(RED "\n xxx YOU LOST xxx" RESET);
+					printf(YELLOW "\n TRY AGAIN? (press ENTER)" RESET);
+					getchar();
+					clear_screen_CONTINUE();
+					continue;
+				}
+			}
+		break;
+	}
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//                   SAVEING
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void resolve_unnamed(){
     if(strcmp(materials.P_name, "unnamed one") == 0){
@@ -2469,6 +2572,7 @@ int loading(){
 
         if(strcmp(actual_file_name, "unnamed")== 0){
             printf("defaulting to a new game");
+            system("cls");
             return 0;
         }
 
