@@ -8,6 +8,9 @@
 #include <conio.h>
 #include <time.h>
 
+#include <zlib.h>
+#include <png.h>
+
 #include "art.h"
 
 #define NO_OF_CREATED_CHOICES 15
@@ -273,6 +276,7 @@ void resolve_unnamed();
 int saving();
 int loading();
 
+int print_ascii_images(char nazev[]);
 
 
 //=======================================================
@@ -489,6 +493,9 @@ int main(){
     //      CONSOLE
     //###################
     HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);//ai schovani kurzoru
+    DWORD dwMode = 0;
+    GetConsoleMode(out, &dwMode);
+    SetConsoleMode(out, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(out, &cursorInfo);
     cursorInfo.bVisible = FALSE; 
@@ -616,6 +623,8 @@ int main(){
                     system("cls");
                     printf("EXPLORE CAVES IS WORK IN PROGRESS\n");
                     clear_screen_CONTINUE();
+                    print_ascii_images("assets/pngs/farmer_villager.png");
+                    print_ascii_images("assets/pngs/rich_villager.png");
                     materials.current_status = STATE_FIGHT;
                 break;
 
@@ -2644,7 +2653,7 @@ State dice_game(){
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//                   SAVEING
+//                   SAVING
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void resolve_unnamed(){
@@ -2721,3 +2730,58 @@ int loading(){
     return 0;
 }
 
+
+int print_ascii_images(char nazev[]){
+    system("cls");
+
+    FILE * Pimg = fopen(nazev, "rb");
+    if(Pimg == NULL){
+        printf("couldnt open");
+        clear_screen_CONTINUE();
+        fclose(Pimg);
+        return 1;
+    }
+
+
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        png_destroy_read_struct(&png_ptr, NULL, NULL);
+        fclose(Pimg);
+        return 2;
+    }
+
+    png_init_io(png_ptr, Pimg);
+    png_read_info(png_ptr, info_ptr);
+
+    // 1. Get image dimensions
+    png_uint_32 width = png_get_image_width(png_ptr, info_ptr);
+    png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
+
+    
+
+    // 2. basicaly pole radku 
+    png_bytep *row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+
+    for (int y = 0; y < height; y++) {
+        row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png_ptr, info_ptr));
+    }
+ 
+    // 3. Decompress the image data into your rows
+    png_read_image(png_ptr, row_pointers);
+
+    for(int i = 0; i < height; i++){
+        for(int j = 0; j < width; j++){
+            printf("\033[48;2;%d;%d;%dm  ", row_pointers[i][j*4], row_pointers[i][j*4+1], row_pointers[i][j*4+2]);
+        }
+        printf("\n");
+    }
+
+    
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+    fclose(Pimg);
+    free(row_pointers);
+    clear_screen_CONTINUE();
+}

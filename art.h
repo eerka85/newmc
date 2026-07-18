@@ -249,6 +249,7 @@ void print_skel(){
 		printf("\n");
 	}
 }
+
 void matika_dice(int kos_1, int d_1[7][7]){
 	switch (kos_1){
 		case 1:
