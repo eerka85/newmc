@@ -15,6 +15,7 @@
 
 #define NO_OF_CREATED_CHOICES 15
 #define MAX_PALYER_HP_FIGHTING 10.0f
+#define STATE_THAT_IM_IN_RN 999
 
 
 
@@ -133,16 +134,8 @@ Crafting_item recipe_book[] = {
 };  
 
 
-typedef struct {
-    const char *label;
-} Choice;
 
-typedef struct {
-    const char *main_label;
-    Choice     choices[NO_OF_CREATED_CHOICES];
-    int        total;
-    int        pos_menu;
-} Menu;
+
 
 typedef struct {
     char P_name[32];
@@ -192,6 +185,21 @@ typedef struct {
     Crafting_materials loottable;
 } Monster;
 
+typedef struct {
+    const char *label;
+} Choice;
+
+typedef struct {
+    const char *main_label;
+    Choice     choices[NO_OF_CREATED_CHOICES];
+    int        total;
+    int        pos_menu;
+} Menu;
+
+typedef struct {
+    int position;
+    State result_state;
+} MenuMap;
 
 //=======================================================
 //                 FUNCTIONS DECLARATION
@@ -199,6 +207,8 @@ typedef struct {
 
 int kets();
 int move_in_menu(Menu * menu);
+
+State handle_normal_menus(Menu *using_menu, MenuMap map[]);
 
 State handle_MAIN_menu();
 State handle_craft_menu();
@@ -283,12 +293,25 @@ int print_ascii_images(char nazev[]);
 //                     MENU CREATION
 //=======================================================
 
+
+
 Menu main_menu = {
     "main menu",
     { {"0. LEAVE"}, {"1. CRAFT"}, {"2. MINE"}, {"3. FIGHT"}, {"4. INVENTORY"}, {"5. HEAL"}, {"6. BASE"} },
     7,
     0 //pos
 };
+MenuMap MAP_main_menu[] = {
+    {0, STATE_SAVE_AND_LEAVE},
+    {1, STATE_CRAFT},
+    {2, STATE_MINE},
+    {3, STATE_FIGHT},
+    {4, STATE_INVENTORY},
+    {5, STATE_HEAL},
+    {6, STATE_BASE},
+    {STATE_THAT_IM_IN_RN, STATE_MENU}
+};
+
 Menu craft_menu = {
     "crafting table",
     { {"0. LEAVE"}, {"1. HELMET (5 iron/dia)"}, {"2. CHESTPLATE (8 iron/dia)"}, {"3. LEGGINS (7 iron/dia)"}, {"4. BOOTS (4 iron/dia)"}, {"5. SWORD (2 iron/dia) + (1 wood)"}, {"6. PICKAXE (3 iron/dia) + (2 wood)"}, {"7. AXE (3 iron/dia) + (2 wood)"}, {"8. BACKPACK (5 leather)"} },
@@ -388,6 +411,12 @@ Menu dice_menu = {
 Menu assasin_decision = {
     "The assassin has lunged towards you, where will strike?",
     { {"1. LEFT"}, {"2. STRAIGHT"}, {"3. RIGHT"} },
+    3,
+    0
+};
+Menu villager_menu = {
+    "Villagers welcome you to their village. Who will you go to?",
+    { {"1. RICH VILLAGER"}, {"2. FARMER VILLAGER"}, {"3. ADVENTURE VILLAGER"} },
     3,
     0
 };
@@ -529,7 +558,7 @@ int main(){
             break;
 
             case STATE_MENU:
-                materials.current_status = handle_MAIN_menu();
+                materials.current_status = handle_normal_menus(&main_menu, MAP_main_menu);
             break;
 
             //   CRAFT      CRAFT      CRAFT      CRAFT      CRAFT      CRAFT
@@ -623,8 +652,6 @@ int main(){
                     system("cls");
                     printf("EXPLORE CAVES IS WORK IN PROGRESS\n");
                     clear_screen_CONTINUE();
-                    print_ascii_images("assets/pngs/farmer_villager.png");
-                    print_ascii_images("assets/pngs/rich_villager.png");
                     materials.current_status = STATE_FIGHT;
                 break;
 
@@ -773,6 +800,24 @@ int move_in_menu(Menu * menu){
 //               menu HANDLERS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+State handle_normal_menus(Menu *using_menu, MenuMap map[]) {
+    system("cls"); 
+    while (1) {
+        print_menu(*using_menu); 
+
+        int action = move_in_menu(using_menu);
+        if (action == 1) { // User pressed ENTER
+            system("cls");
+            for(int i = 0; i < using_menu->total; i++) {
+                if(using_menu->pos_menu == map[i].position) {
+                    return map[i].result_state;
+                }
+            }
+            return STATE_ERR;
+        }
+        // If action == 0 the loop continues
+    }
+}
 
 State handle_MAIN_menu(){ //prints then checks for input using move in menu
     print_menu(main_menu); 
@@ -2731,6 +2776,7 @@ int loading(){
 }
 
 
+
 int print_ascii_images(char nazev[]){
     system("cls");
 
@@ -2779,9 +2825,22 @@ int print_ascii_images(char nazev[]){
     }
 
     
+    // 1. Free each row buffer
+    for (int y = 0; y < height; y++) {
+        free(row_pointers[y]);
+    }
+    // 2. Free the pointer array
+    free(row_pointers);
+
+    // 3. Cleanup PNG structures
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
+    // 4. Finally close the file
     fclose(Pimg);
-    free(row_pointers);
+    
+    // 5. Reset terminal color so the rest of your app doesn't stay colored
+    printf("\033[0m\n");
+
     clear_screen_CONTINUE();
+    return 0; // Don't forget to return 0 for success!
 }
