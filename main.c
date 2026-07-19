@@ -210,18 +210,14 @@ int kets();
 int move_in_menu(Menu * menu);
 
 State handle_normal_menus(Menu *using_menu, MenuMap map[]);
+int handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2);
+int handle_3_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2, int option_no3);
 
 State D_or_I_menu_plus_craft(State where_am_i_state, What_do_i_craft_please variant);
 Fighting_state handle_encounter_menu(Monster chosen_monster);
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives);
 
-int handle_samurai_PATACK(int boss_hp, int player_hp);
-int handle_samurai_BOSSS_attack(int boss_hp, int player_hp);
 
-int handle_mage_BOSS_atorleave();
-int handle_mage_attacks_u();
-
-int handle_assasin_decision(int boss_hp, int player_hp);
 
 void clean_buffer();
 int input_int(int min, int max);
@@ -895,12 +891,13 @@ State handle_normal_menus(Menu *using_menu, MenuMap map[]) {
     }
 }
 
-State handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2){
+int handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2){
     while(1){
         printf(YELLOW "%s" RESET, text_on_top);
         print_menu(*using_menu);
         int action = move_in_menu(using_menu);
         if(action == 1){
+            system("cls");
             switch(using_menu->pos_menu){
                 case 0:
                     return option_no1;
@@ -908,6 +905,30 @@ State handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int
 
                 case 1:
                     return option_no2;
+                break;
+            }
+        }
+        //else contionues
+    }
+}
+int handle_3_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2, int option_no3){
+    while(1){
+        printf(YELLOW "%s" RESET, text_on_top);
+        print_menu(*using_menu);
+        int action = move_in_menu(using_menu);
+        if(action == 1){
+            system("cls");
+            switch(using_menu->pos_menu){
+                case 0:
+                    return option_no1;
+                break;
+
+                case 1:
+                    return option_no2;
+                break;
+
+                case 2:
+                    return option_no3;
                 break;
             }
         }
@@ -976,28 +997,6 @@ Fighting_state handle_encounter_menu(Monster chosen_monster){
 }
 
 
-int handle_starter_tank_menu(){
-    while(1){
-        printf(YELLOW "\n You walk around hilly plains and suddenly you hear a strange soud...\n" RESET);
-        print_menu(start_tank_menu);
-        if(move_in_menu(&start_tank_menu)){
-            switch(start_tank_menu.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 0;
-                break;
-                
-                default:
-                    return 1;
-                break;
-            }
-        }
-    }
-}
-
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives){
     system("cls");
     while(1){
@@ -1030,156 +1029,6 @@ int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int m
 }
 
 
-int handle_mage_BOSS_atorleave(){
-    system("cls");
-    while(1){
-        print_menu(mage_at_or_leave);
-        if(move_in_menu(&mage_at_or_leave)){
-            system("cls");
-            switch(mage_at_or_leave.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 0;
-                break;
-                
-                default:
-                    return 0;
-                break;
-            }
-        }
-    }
-}
-
-int handle_mage_attacks_u(){
-    system("cls");
-    while(1){
-        print_menu(mage_attack_u);
-        if(move_in_menu(&mage_attack_u)){
-            system("cls");
-            switch(mage_attack_u.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 2;
-                break;
-
-                case 2:
-                    return 3;
-                break;
-                
-                default:
-                    return 1;
-                break;
-            }
-        }
-    }
-}
-
-
-int handle_samurai_PATACK(int boss_hp, int player_hp){
-    system("cls");
-    while(1){
-        printf(CYAN "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
-        print_menu(samurai_PATAK);
-        if(move_in_menu(&samurai_PATAK)){
-            system("cls");
-            switch(samurai_PATAK.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 0;
-                break;
-                
-                default:
-                    return 0;
-                break;
-            }
-        }
-    }
-}
-
-int handle_samurai_BOSSS_attack(int boss_hp, int player_hp){
-    system("cls");
-    while(1){
-        printf(CYAN "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
-        print_menu(samurai_BOSSS_attack);
-        if(move_in_menu(&samurai_BOSSS_attack)){
-            system("cls");
-            switch(samurai_BOSSS_attack.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 0;
-                break;
-                
-                default:
-                    return 0;
-                break;
-            }
-        }
-    }
-}
-
-
-int handle_dice(){
-    system("cls");
-    while(1){
-        print_menu(dice_menu);
-        if(move_in_menu(&dice_menu)){
-            system("cls");
-            switch(dice_menu.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 0;
-                break;
-                
-                default:
-                    return 0;
-                break;
-            }
-        }
-    }
-}
-
-int handle_assasin_decision(int boss_hp, int player_hp){
-    system("cls");
-    while(1){
-        printf (RED "Boss HP: %d | Your HP: %d\n" RESET, boss_hp, player_hp);
-        print_menu(assasin_decision);
-        if(move_in_menu(&assasin_decision)){
-            system("cls");
-            switch(assasin_decision.pos_menu){
-                case 0:
-                    return 1;
-                break;
-
-                case 1:
-                    return 2;
-                break;
-
-                case 2:
-                    return 3;
-                break;
-                
-                default:
-                    return 2;
-                break;
-            }
-        }
-    }
-}
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //               BASIC FUNCTIONS
@@ -2104,9 +1953,9 @@ State samurai_fight(){
         b_crit_chance  = rand() % 100;
         b_dodge_chance = rand() % 100;
         
-        
-         
-        switch(handle_samurai_PATACK(boss_hp, player_hp)){
+        char buffer[50];
+        sprintf(buffer, "Boss HP: %d | Your HP: %d", boss_hp, player_hp); //ts coool
+        switch(handle_2_options(&samurai_PATAK, buffer, 1, 0)){
             case 1:
                 damage = 1;
                 if (materials.d_sword > 0) {
@@ -2161,7 +2010,8 @@ State samurai_fight(){
         return STATE_BOSS;
         }
 
-        switch(handle_samurai_BOSSS_attack(boss_hp, player_hp)){
+        sprintf(buffer, "Boss HP: %d | Your HP: %d", boss_hp, player_hp); //ts coool
+        switch(handle_2_options(&samurai_BOSSS_attack, buffer, 1, 0)){
             case 1:
                 if (p_dodge_chance <= 30) {
                     printf(GREEN "You successfully dodged the attack!\n" RESET);
@@ -2283,7 +2133,7 @@ State mage_fight(){
             printf ("\n");
             clear_screen_CONTINUE();
         }
-        p_attack = handle_mage_BOSS_atorleave();
+        p_attack = handle_2_options(&mage_at_or_leave, "", 1, 0);
         switch (p_attack) {
             case 1:
                 damage = 1;
@@ -2336,7 +2186,7 @@ State mage_fight(){
                 clear_screen_CONTINUE();
             break;
         }
-        p_attack = handle_mage_attacks_u();
+        p_attack = handle_3_options(&mage_attack_u, "", 1, 2, 3);
         switch (p_attack) {
             // Blue - Defend, Red - Dodge, Purple - Attack
         case 1:
@@ -2423,7 +2273,9 @@ State assassin_fight(){
         Sleep (175);
         system("cls");
 
-        p_attack = handle_assasin_decision(boss_hp, player_hp); // choose where to attack
+        char buffer[50];
+        sprintf(buffer, "Boss HP: %d | Your HP: %d\n", boss_hp, player_hp);
+        p_attack = handle_3_options(&assasin_decision, buffer, 1, 2, 3); // choose where to attack
 
         if (p_attack == e_pos + 1){
             printf(GREEN "You successfully hit the assassin!\n" RESET);
@@ -2471,7 +2323,7 @@ State dice_game(){
 	int dv2;
 	int dp1;
 	int dp2;
-	volba_d = handle_dice();
+	volba_d = handle_2_options(&dice_menu, "", 1, 0);
 	switch(volba_d){
 		case 0:
             system("cls");
