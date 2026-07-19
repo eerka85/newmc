@@ -61,6 +61,9 @@ typedef enum {
     STATE_HEAL,
     STATE_BASE,
         STATE_VILLAGERS,
+            STATE_RICH_VILLAGER,
+            STATE_FARMER_VILLAGER,
+            STATE_ADVENTURE_VILLAGER,
         STATE_STORAGE,
         STATE_PETS,
     STATE_SAVE_AND_LEAVE,
@@ -134,9 +137,6 @@ Crafting_item recipe_book[] = {
 };  
 
 
-
-
-
 typedef struct {
     char P_name[32];
     int no_of_TANKs_defeated;
@@ -150,6 +150,7 @@ typedef struct {
 	int wood;
 	int iron;
 	int diamonds;
+    int emeralds;
 	int i_helmet;
 	int d_helmet;
 	int i_chestplate;
@@ -369,7 +370,7 @@ MenuMap MAP_boss_menu[] = {
 
 Menu base_menu = {
     "base menu",
-    { {"0. BACK"}, {"1. VILLAGERS (WIP)"}, {"2. STORAGE"}, {"3. PETS"} },
+    { {"0. BACK"}, {"1. VILLAGERS"}, {"2. STORAGE (WIP)"}, {"3. PETS (WIP)"} },
     4,
     0 //pos
 };
@@ -387,7 +388,6 @@ Menu D_or_I_menu = {
     3,
     0 //pos
 };
-//htgwohegosiduhgfnisedfoigiguhuhneoiurrhgoedr
 Menu encounter_menu = {
     "what will you do?",
     { {"0. TRY TO RUN"}, {"1. ATTACK"}, {"2. TRY TO TAME WITH BONES"} },
@@ -430,6 +430,7 @@ Menu mage_attack_u = {
     3,
     0
 };
+
 Menu enter_game = {
     "MINECRAFT ADVENTURE IN C",
     { {"1. Start new game"}, {"2. Load existing game"}, {"3. Quit"} },
@@ -468,11 +469,19 @@ Menu assasin_decision = {
     3,
     0
 };
+
 Menu villager_menu = {
     "Villagers welcome you to their village. Who will you go to?",
     { {"1. RICH VILLAGER"}, {"2. FARMER VILLAGER"}, {"3. ADVENTURE VILLAGER"} },
     3,
     0
+};
+MenuMap MAP_villager_menu[] = {
+    {0, STATE_BASE},
+    {1, STATE_RICH_VILLAGER},
+    {2, STATE_FARMER_VILLAGER},
+    {3, STATE_ADVENTURE_VILLAGER},
+    {STATE_THAT_IM_IN_RN, STATE_VILLAGERS}
 };
 
 //=======================================================
@@ -492,6 +501,7 @@ Materials materials = {
     .wood = 0,
     .iron = 0,
     .diamonds = 0,
+    .emeralds = 0,
     .i_helmet = 0,
     .d_helmet = 0,
     .i_chestplate = 0,
@@ -560,11 +570,6 @@ Monster wolf ={
     .loottable = { .bones = 1 },
     .print_monster = print_wolf
 };
-
-
-
-
-
 
 
 //=======================================================
@@ -724,11 +729,26 @@ int main(){
                 materials.current_status = handle_normal_menus(&base_menu, MAP_base_menu);
             break;
                 case STATE_VILLAGERS:
-                    system("cls");
-                    printf("VILLAGERS IN PROGRESS\n");
-                    clear_screen_CONTINUE();
-                    materials.current_status = STATE_BASE;
+                    materials.current_status = handle_normal_menus(&villager_menu, MAP_villager_menu);
                 break;
+                    case STATE_RICH_VILLAGER:
+                        system("cls");
+                        printf("RICH IS WORK IN PROGRESS\n");
+                        clear_screen_CONTINUE();
+                        materials.current_status = STATE_VILLAGERS;
+                    break;
+                    case STATE_FARMER_VILLAGER:
+                        system("cls");
+                        printf("FARMER IS WORK IN PROGRESS\n");
+                        clear_screen_CONTINUE();
+                        materials.current_status = STATE_VILLAGERS;
+                    break;
+                    case STATE_ADVENTURE_VILLAGER:
+                        system("cls");
+                        printf("ADVENTURE IS WORK IN PROGRESS\n");
+                        clear_screen_CONTINUE();
+                        materials.current_status = STATE_VILLAGERS;
+                    break;
                 case STATE_STORAGE:
                     system("cls");
                     printf("STORAGE\n");
@@ -875,7 +895,25 @@ State handle_normal_menus(Menu *using_menu, MenuMap map[]) {
     }
 }
 
+State handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2){
+    while(1){
+        printf(YELLOW "%s" RESET, text_on_top);
+        print_menu(*using_menu);
+        int action = move_in_menu(using_menu);
+        if(action == 1){
+            switch(using_menu->pos_menu){
+                case 0:
+                    return option_no1;
+                break;
 
+                case 1:
+                    return option_no2;
+                break;
+            }
+        }
+        //else contionues
+    }
+}
 
 State D_or_I_menu_plus_craft(State where_am_i_state, What_do_i_craft_please variant){
     print_menu(D_or_I_menu);
@@ -1346,6 +1384,11 @@ void craft_me_pls(What_do_i_craft_please variant){
     }
     else{
         int * P_item_in_inv = map_craft_enum_to_struct(variant);
+        if (P_item_in_inv == NULL) {
+            printf(RED " Error: Unknown item variant." RESET);
+            clear_screen_CONTINUE();
+            return;
+        }
         if(*P_item_in_inv >=1){
             printf(RED " Already have one..." RESET);
         }
@@ -1889,7 +1932,7 @@ State tank_fight(){
 	system("cls");
 
 
-    if(handle_starter_tank_menu()) return STATE_BOSS;	
+    if(handle_2_options(&start_tank_menu, "\n You walk around hilly plains and suddenly you hear a strange soud...\n", 1, 0)) return STATE_BOSS;	
 
     system("cls"); //uvod 
 	printf(YELLOW "\n Behind one of the hills appears.... " RESET);
