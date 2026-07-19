@@ -45,9 +45,9 @@ typedef enum {
         STATE_AXE,
         STATE_BACKPACK,
     STATE_MINE,
-        STATE_WOOD,
-        STATE_IRON,
-        STATE_DIAMONDS,
+        STATE_WOOD_MINE,
+        STATE_IRON_MINE,
+        STATE_DIAMONDS_MINE,
     STATE_FIGHT,
         STATE_BOSS,
             STATE_SAMURAI,
@@ -210,15 +210,7 @@ int move_in_menu(Menu * menu);
 
 State handle_normal_menus(Menu *using_menu, MenuMap map[]);
 
-State handle_MAIN_menu();
-State handle_craft_menu();
-State handle_mine_menu();
-State handle_fighting_menu();
-    State handle_boss_menu();
-State handle_base_menu();
-State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant);
-State handle_enter_game_menu();
-State handle_save_and_leave();
+State D_or_I_menu_plus_craft(State where_am_i_state, What_do_i_craft_please variant);
 Fighting_state handle_encounter_menu(Monster chosen_monster);
 int handle_tank_menu(int MAUS_lives, int max_MAUS_lives, int PLAYER_lives, int max_PLAYER_lives);
 
@@ -318,36 +310,84 @@ Menu craft_menu = {
     9,
     0 //pos
 };
+MenuMap MAP_craft_menu[] = {
+    {0, STATE_MENU},
+    {1, STATE_HELMET},
+    {2, STATE_CHESTPLATE},
+    {3, STATE_LEGGINS},
+    {4, STATE_BOOTS},
+    {5, STATE_SWORD},
+    {6, STATE_PICKAXE},
+    {7, STATE_AXE},
+    {8, STATE_BACKPACK},
+    {STATE_THAT_IM_IN_RN, STATE_CRAFT}
+};
+
 Menu mine_menu = {
     "mining menu",
     { {"0. BACK"}, {"1. MINING WOOD"}, {"2. MINING IRON"}, {"3. MINING DIAMONDS"} },
     4,
     0 //pos
 };
+MenuMap MAP_mine_menu[] = {
+    {0, STATE_MENU},
+    {1, STATE_WOOD_MINE},
+    {2, STATE_IRON_MINE},
+    {3, STATE_DIAMONDS_MINE},
+    {STATE_THAT_IM_IN_RN, STATE_MINE}
+};
+
 Menu fighting_menu = {
     "fighting menu",
     { {"0. BACK"}, {"1. BOSS FIGHT"}, {"2. EXPLORE (plains)"}, {"3. EXPLORE (caves)(WIP)"}},
     4,
     0 //pos
 };
+MenuMap MAP_fighting_menu[] = {
+    {0, STATE_MENU},
+    {1, STATE_BOSS},
+    {2, STATE_EXPLORE_PLAINS},
+    {3, STATE_EXPLORE_CAVES},
+    {STATE_THAT_IM_IN_RN, STATE_FIGHT}
+};
+
 Menu boss_menu = {
     "BOSS menu",
     { {"0. BACK"}, {"1. LEVEL - 1 Samurai"}, {"2. LEVEL - 2 Mage"}, {"3. LEVEL - 3 Tank"}, {"4. LEVEL - 4 Assasin"}, {"5. RANDOM LEVEL"} },
     6,
     0 //pos
 };
+MenuMap MAP_boss_menu[] = {
+    {0, STATE_FIGHT},
+    {1, STATE_SAMURAI},
+    {2, STATE_MAGE},
+    {3, STATE_TANK},
+    {4, STATE_ASSASSIN},
+    {5, STATE_RANDOM_BOSS},
+    {STATE_THAT_IM_IN_RN, STATE_BOSS}
+};
+
 Menu base_menu = {
     "base menu",
     { {"0. BACK"}, {"1. VILLAGERS (WIP)"}, {"2. STORAGE"}, {"3. PETS"} },
     4,
     0 //pos
 };
+MenuMap MAP_base_menu[] = {
+    {0, STATE_MENU},
+    {1, STATE_VILLAGERS},
+    {2, STATE_STORAGE},
+    {3, STATE_PETS},
+    {STATE_THAT_IM_IN_RN, STATE_BASE}
+};
+
 Menu D_or_I_menu = {
     "base menu",
     { {"0. BACK"}, {"1. IRON"}, {"2. DIAMOND"} },
     3,
     0 //pos
 };
+//htgwohegosiduhgfnisedfoigiguhuhneoiurrhgoedr
 Menu encounter_menu = {
     "what will you do?",
     { {"0. TRY TO RUN"}, {"1. ATTACK"}, {"2. TRY TO TAME WITH BONES"} },
@@ -396,12 +436,26 @@ Menu enter_game = {
     3,
     0
 };
+MenuMap MAP_enter_game[] = {
+    {0, STATE_MENU},
+    {1, STATE_LOAD},
+    {2, STATE_LEAVE},
+    {STATE_THAT_IM_IN_RN, STATE_ENTER_GAME}
+};
+
 Menu save_and_leave_game = {
     "LEAVE GAME?",
     { {"1. Save and leave"}, {"2. leave"}, {"3. Go back"} },
     3,
     0
 };
+MenuMap MAP_save_and_leave_game[] = {
+    {0, STATE_SAVE},
+    {1, STATE_LEAVE},
+    {2, STATE_MENU},
+    {STATE_THAT_IM_IN_RN, STATE_SAVE_AND_LEAVE}
+};
+
 Menu dice_menu = {
     "PLAY DICE WITH VILLAGER FOR FOOD?",
     { {"1. YES"}, {"0. Go back"} },
@@ -549,7 +603,7 @@ int main(){
         switch(materials.current_status){
 
             case STATE_ENTER_GAME:
-                materials.current_status = handle_enter_game_menu();
+                materials.current_status = handle_normal_menus(&enter_game, MAP_enter_game);
             break;
 
             case STATE_LOAD:
@@ -564,28 +618,28 @@ int main(){
             //   CRAFT      CRAFT      CRAFT      CRAFT      CRAFT      CRAFT
 
             case STATE_CRAFT:
-                materials.current_status = handle_craft_menu();
+                materials.current_status = handle_normal_menus(&craft_menu, MAP_craft_menu);
             break;
                 case STATE_HELMET:
-                    materials.current_status = handle_D_or_I_menu(STATE_HELMET, I_HELMET);
+                    materials.current_status = D_or_I_menu_plus_craft(STATE_HELMET, I_HELMET);
                 break;
                 case STATE_CHESTPLATE:
-                    materials.current_status = handle_D_or_I_menu(STATE_CHESTPLATE, I_CHESTPLATE);
+                    materials.current_status = D_or_I_menu_plus_craft(STATE_CHESTPLATE, I_CHESTPLATE);
                 break;
                 case STATE_LEGGINS:
-                    materials.current_status = handle_D_or_I_menu(STATE_LEGGINS, I_LEGGINS);
+                    materials.current_status = D_or_I_menu_plus_craft(STATE_LEGGINS, I_LEGGINS);
                 break;
                 case STATE_BOOTS:
-                    materials.current_status = handle_D_or_I_menu(STATE_BOOTS, I_BOOTS);
+                    materials.current_status = D_or_I_menu_plus_craft(STATE_BOOTS, I_BOOTS);
                 break;
                 case STATE_SWORD:
-                    materials.current_status = handle_D_or_I_menu(STATE_SWORD, I_SWORD);
+                    materials.current_status = D_or_I_menu_plus_craft(STATE_SWORD, I_SWORD);
                 break;
                 case STATE_PICKAXE:
-                    materials.current_status = handle_D_or_I_menu(STATE_PICKAXE, I_PICKAXE);
+                    materials.current_status = D_or_I_menu_plus_craft(STATE_PICKAXE, I_PICKAXE);
                 break;
                 case STATE_AXE:
-                    materials.current_status = handle_D_or_I_menu(STATE_AXE, I_AXE);
+                    materials.current_status = D_or_I_menu_plus_craft(STATE_AXE, I_AXE);
                 break;
                 case STATE_BACKPACK:
                     craft_me_pls(BACKPACK);
@@ -595,20 +649,20 @@ int main(){
             //   MINE      MINE      MINE      MINE      MINE      MINE   
 
             case STATE_MINE:
-                materials.current_status = handle_mine_menu();
+                materials.current_status = handle_normal_menus(&mine_menu, MAP_mine_menu);
             break;
 
-                case STATE_WOOD:
+                case STATE_WOOD_MINE:
                     wood_mine();
                     materials.current_status = STATE_MINE;
                 break;
 
-                case STATE_IRON:
+                case STATE_IRON_MINE:
                     iron_mine();
                     materials.current_status = STATE_MINE;
                 break;
 
-                case STATE_DIAMONDS:
+                case STATE_DIAMONDS_MINE:
                     diamond_mine();
                     materials.current_status = STATE_MINE;
                 break;
@@ -616,10 +670,10 @@ int main(){
             //   FIGHT      FIGHT      FIGHT      FIGHT      FIGHT      FIGHT   
 
             case STATE_FIGHT:
-                materials.current_status = handle_fighting_menu();
+                materials.current_status = handle_normal_menus(&fighting_menu, MAP_fighting_menu);
             break;
                 case STATE_BOSS:
-                    materials.current_status = handle_boss_menu();
+                    materials.current_status = handle_normal_menus(&boss_menu, MAP_boss_menu);
                 break;
                     case STATE_SAMURAI:
                         materials.current_status = samurai_fight();
@@ -667,7 +721,7 @@ int main(){
             break;
 
             case STATE_BASE:
-                materials.current_status = handle_base_menu();
+                materials.current_status = handle_normal_menus(&base_menu, MAP_base_menu);
             break;
                 case STATE_VILLAGERS:
                     system("cls");
@@ -693,13 +747,14 @@ int main(){
                 break;
             
             case STATE_SAVE_AND_LEAVE:
-                materials.current_status = handle_save_and_leave();
+                materials.current_status = handle_normal_menus(&save_and_leave_game, MAP_save_and_leave_game);
             break;
     
             case STATE_LEAVE:
                 system("cls");
-                printf("you shouldnt be here\n");
+                printf("you shouldnt be here? at least i think...\n");
                 clear_screen_CONTINUE();
+                materials.current_status = STATE_ERR;
             break;
 
             case STATE_DEATH:
@@ -717,6 +772,7 @@ int main(){
                 system("cls");
                 printf("ERROR??? idk\n");
                 clear_screen_CONTINUE();
+                return 1;
             break;
             
         }
@@ -819,233 +875,9 @@ State handle_normal_menus(Menu *using_menu, MenuMap map[]) {
     }
 }
 
-State handle_MAIN_menu(){ //prints then checks for input using move in menu
-    print_menu(main_menu); 
-    if(move_in_menu(&main_menu)){
-        system("cls");
-        switch(main_menu.pos_menu){
-            case 0:
-                return STATE_SAVE_AND_LEAVE;
-            break;
 
-            case 1:
-                return STATE_CRAFT;
-            break;
 
-            case 2:
-                return STATE_MINE;
-            break;
-
-            case 3:
-                return STATE_FIGHT;
-            break;
-
-            case 4:
-                return STATE_INVENTORY;
-            break;
-
-            case 5:
-                return STATE_HEAL;
-            break;
-
-            case 6:
-                return STATE_BASE;
-            break;
-
-            default:
-                return STATE_ERR;
-            break;
-        }
-    }
-    else{
-        return STATE_MENU;
-    }
-}
-
-State handle_craft_menu(){ //prints then checks for input using move in menu
-    print_craft_menu(craft_menu); 
-    if(move_in_menu(&craft_menu)){
-        system("cls");
-        switch(craft_menu.pos_menu){
-            case 0:
-                return STATE_MENU;
-            break;
-
-            case 1:
-                return STATE_HELMET;
-            break;
-
-            case 2:
-                return STATE_CHESTPLATE;
-            break;
-
-            case 3:
-                return STATE_LEGGINS;
-            break;
-
-            case 4:
-                return STATE_BOOTS;
-            break;
-
-            case 5:
-                return STATE_SWORD;
-            break;
-
-            case 6:
-                return STATE_PICKAXE;
-            break;
-
-            case 7:
-                return STATE_AXE;
-            break;
-
-            case 8:
-                return STATE_BACKPACK;
-            break;
-
-            default:
-                return STATE_ERR;
-            break;
-        }
-    }
-    else{
-        return STATE_CRAFT;
-    }
-}
-
-State handle_mine_menu(){
-    print_menu(mine_menu);
-    if(move_in_menu(&mine_menu)){
-        system("cls");
-        switch(mine_menu.pos_menu){
-            case 0:
-                return STATE_MENU;
-            break;
-
-            case 1:
-                return STATE_WOOD;
-            break;
-
-            case 2:
-                return STATE_IRON;
-            break;
-
-            case 3:
-                return STATE_DIAMONDS;
-            break;
-
-            default:
-                return STATE_ERR;
-            break;
-        }
-    }
-    else{
-        return STATE_MINE;
-    }
-}
-
-State handle_fighting_menu(){
-    print_menu(fighting_menu);
-    if(move_in_menu(&fighting_menu)){
-        system("cls");
-        switch(fighting_menu.pos_menu){
-            case 0:
-                return STATE_MENU;
-            break;
-
-            case 1:
-                return STATE_BOSS;
-            break;
-
-            case 2:
-                return STATE_EXPLORE_PLAINS;
-            break;
-
-            case 3:
-                return STATE_EXPLORE_CAVES;
-            break;
-
-            default:
-                return STATE_ERR;
-            break;
-        }
-    }
-    else{
-        return STATE_FIGHT;
-    }
-}
-
-State handle_boss_menu(){
-    print_menu(boss_menu);
-    if(move_in_menu(&boss_menu)){
-        system("cls");
-        switch(boss_menu.pos_menu){
-            case 0:
-                return STATE_FIGHT;
-            break;
-
-            case 1:
-                return STATE_SAMURAI;
-            break;
-
-            case 2:
-                return STATE_MAGE;
-            break;
-
-            case 3:
-                return STATE_TANK;
-            break;
-
-            case 4:
-                return STATE_ASSASSIN;
-            break;
-
-            case 5:
-                return STATE_RANDOM_BOSS;
-            break;
-
-            default:
-                return STATE_ERR;
-            break;
-        }
-    }
-    else{
-        return STATE_BOSS;
-    }
-}
-
-State handle_base_menu(){
-    print_menu(base_menu);
-    if(move_in_menu(&base_menu)){
-        system("cls");
-        switch(base_menu.pos_menu){
-            case 0:
-                return STATE_MENU;
-            break;
-
-            case 1:
-                return STATE_VILLAGERS;
-            break;
-
-            case 2:
-                return STATE_STORAGE;
-            break;
-
-            case 3:
-                return STATE_PETS;
-            break;
-
-            default:
-                return STATE_ERR;
-            break;
-        }
-    }
-    else{
-        return STATE_BASE;
-    }
-}
-
-State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant){
+State D_or_I_menu_plus_craft(State where_am_i_state, What_do_i_craft_please variant){
     print_menu(D_or_I_menu);
     if(move_in_menu(&D_or_I_menu)){
         switch(D_or_I_menu.pos_menu){
@@ -1073,51 +905,6 @@ State handle_D_or_I_menu(State where_am_i_state, What_do_i_craft_please variant)
     }
 }
 
-State handle_enter_game_menu(){
-    print_menu(enter_game);
-    if(move_in_menu(&enter_game)){
-        system("cls");
-        switch(enter_game.pos_menu){
-            case 0:
-                return STATE_MENU;
-            break;
-
-            case 1:
-                return STATE_LOAD;
-            break;
-
-            case 2:
-                return STATE_LEAVE;
-            break;
-        }
-    }
-    else{
-        return STATE_ENTER_GAME;
-    }
-}
-
-State handle_save_and_leave(){
-    print_menu(save_and_leave_game);
-    if(move_in_menu(&save_and_leave_game)){
-        system("cls");
-        switch(save_and_leave_game.pos_menu){
-            case 0:
-                return STATE_SAVE;
-            break;
-
-            case 1:
-                return STATE_LEAVE;
-            break;
-
-            case 2:
-                return STATE_MENU;
-            break;
-        }
-    }
-    else{
-        return STATE_SAVE_AND_LEAVE;
-    }
-}
 
 Fighting_state handle_encounter_menu(Monster chosen_monster){
     chosen_monster.print_monster();
