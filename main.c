@@ -1,4 +1,4 @@
-//TODO: death, storage? + pets, redo dice for emeralds and move to base, mabye redo D_or_I
+//TODO: death, storage? + pets, redo dice for emeralds and move to base, mabye redo D_or_I, caves, limit mines to day night cycle?
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -231,6 +231,7 @@ void print_menu(Menu printed_MENU);
 void print_craft_menu(Menu printed_MENU);
 void print_inventory();
 void print_rich_villager(Menu printed_MENU);
+void print_farmer_villager(Menu printed_MENU);
 
 int * map_craft_enum_to_struct(What_do_i_craft_please variant);
 void ARMOR_AND_TOOLS_check_craftability_and_print_line(What_do_i_craft_please i_variant, What_do_i_craft_please d_variant, Menu printed_MENU, int i);
@@ -282,6 +283,7 @@ int loading();
 int print_ascii_images(char nazev[]);
 
 State trade_rich_villager();
+State trade_farmer_villager();
 
 
 //=======================================================
@@ -488,6 +490,12 @@ MenuMap MAP_villager_menu[] = {
 
 Menu rich_villager = {
     "Rich villager: Ill give you 1 diamond for 2 emeralds, how about it?",
+    { {"1. Alright bet"}, {"2. He hell naw"} },
+    2,
+    0  
+};
+Menu farmer_villager = {
+    "Farmer villager: Ill give you 1 bread (heals 2hp) for 1 emeralds, how about it?",
     { {"1. Alright bet"}, {"2. He hell naw"} },
     2,
     0  
@@ -748,10 +756,7 @@ int main(){
                         materials.current_status = trade_rich_villager();
                     break;
                     case STATE_FARMER_VILLAGER:
-                        system("cls");
-                        printf("FARMER IS WORK IN PROGRESS\n");
-                        clear_screen_CONTINUE();
-                        materials.current_status = STATE_VILLAGERS;
+                        materials.current_status = trade_farmer_villager();
                     break;
                     case STATE_ADVENTURE_VILLAGER:
                         system("cls");
@@ -1186,6 +1191,10 @@ void print_inventory(){
 
 void print_rich_villager(Menu printed_MENU){
     print_ascii_images("assets/pngs/rich_villager.png");
+    print_menu(printed_MENU);
+}
+void print_farmer_villager(Menu printed_MENU){
+    print_ascii_images("assets/pngs/farmer_villager.png");
     print_menu(printed_MENU);
 }
 
@@ -2572,6 +2581,32 @@ State trade_rich_villager(){
                 materials.diamonds++;
                 materials.emeralds -= 2;
                 printf("succesfully trades 2 emeralds for 1 diamond\n");
+            }
+            else{
+                printf("not enough emeralds\n");
+            }
+            clear_screen_CONTINUE();
+            return STATE_VILLAGERS;
+        break;
+
+        case 2:
+            return STATE_VILLAGERS;
+        break;
+    }
+}
+
+State trade_farmer_villager(){
+    system("cls");
+    int volba = handle_2_options(&farmer_villager, "", print_farmer_villager, 1, 2);
+    switch(volba){
+        case 1:
+            if(materials.emeralds >= 1){
+                materials.player_hp_fighting += 2;
+                materials.emeralds -= 1;
+                printf("succesfully trades 1 emerald for 1 break\nhealed 2 hp");
+                if(materials.player_hp_fighting > 10){
+                    materials.player_hp_fighting = 10;
+                }
             }
             else{
                 printf("not enough emeralds\n");
