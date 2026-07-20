@@ -16,7 +16,7 @@
 #define MAX_PALYER_HP_FIGHTING 10.0f
 #define STATE_THAT_IM_IN_RN 999
 
-
+#define QUEST_REWARD_FOR_BOSS 20
 
 #define D_SWORD_DMG    2.5f
 #define I_SWORD_DMG    2.0f
@@ -24,7 +24,6 @@
 
 #define D_ARMOR_PIECE 1.0f
 #define I_ARMOR_PIECE 0.5f
-
 
 
 #define TANK_DAMAGE_TRESHOLD 2
@@ -102,6 +101,25 @@ typedef enum {
     TOTAL_CRAFTING_ITEMS
 } What_do_i_craft_please;
 
+typedef enum {
+    QUEST_NONE,
+    QUEST_SAMURAI,
+    QUEST_MAGE,
+    QUEST_TANK,
+    QUEST_ASSASIN,
+    QUEST_DOG,
+    TOTAL_QUESTS
+} Quest;
+
+typedef struct {
+    Quest quest_enum;
+    char * what_to_do;
+    int reward_emeralds;
+    char * name;
+    int complete_or_nah;
+} Whole_quest;
+
+
 typedef struct {
     int bones;
 	int leather;
@@ -110,7 +128,6 @@ typedef struct {
 	int iron;
 	int diamonds;
 } Crafting_materials;
-
 
 typedef struct {
     What_do_i_craft_please Crafting_item_name;
@@ -171,6 +188,7 @@ typedef struct {
     int call_of_the_night;
     Fighting_state current_F_state;
     State current_status;
+    Quest active_quest;
 } Materials;
 
 typedef struct {
@@ -230,8 +248,13 @@ void print_menu(Menu printed_MENU);
 
 void print_craft_menu(Menu printed_MENU);
 void print_inventory();
+
+Whole_quest what_quest(Quest searched_enum);
+
 void print_rich_villager(Menu printed_MENU);
 void print_farmer_villager(Menu printed_MENU);
+void print_cowboy_villager(Menu printed_MENU);
+void print_cowboy_villager_and_quest(Menu printed_MENU);
 
 int * map_craft_enum_to_struct(What_do_i_craft_please variant);
 void ARMOR_AND_TOOLS_check_craftability_and_print_line(What_do_i_craft_please i_variant, What_do_i_craft_please d_variant, Menu printed_MENU, int i);
@@ -282,9 +305,12 @@ int loading();
 
 int print_ascii_images(char nazev[]);
 
+
+Quest random_quest();
+
 State trade_rich_villager();
 State trade_farmer_villager();
-
+State trade_adventure_villager();
 
 //=======================================================
 //                     MENU CREATION
@@ -494,8 +520,23 @@ Menu rich_villager = {
     2,
     0  
 };
+
 Menu farmer_villager = {
     "Farmer villager: Ill give you 1 bread (heals 2hp) for 1 emeralds, how about it?",
+    { {"1. Alright bet"}, {"2. He hell naw"} },
+    2,
+    0  
+};
+
+Menu adventure_villager_do_you_want_a_quest = {
+    "Adventure villager: Ah.. it looks like you dont have an active quest,\n would you be intrested in an adveture in exchange for a few emeralds?",
+    { {"1. Alright bet"}, {"2. He hell naw"} },
+    2,
+    0  
+};
+
+Menu adventure_villager_do_you_accept = {
+    "Will you accept this quest?",
     { {"1. Alright bet"}, {"2. He hell naw"} },
     2,
     0  
@@ -539,8 +580,10 @@ Materials materials = {
     .protection_armor = 0.0f,
     .call_of_the_night = 5,
     .current_F_state = F_STATE_MENU,
-    .current_status = STATE_MENU
+    .current_status = STATE_MENU,
+    .active_quest = QUEST_NONE
 };
+
 
 Monster zombie = {
     .hp_mon = 8.0f,
@@ -592,6 +635,44 @@ Monster wolf ={
     .emerald_drop = 1
 };
 
+Whole_quest quest_book[] = {
+    [0] = { .name = "No Quest",              .quest_enum = QUEST_NONE,       .what_to_do = "do nothing ig?",                                                  .reward_emeralds = 0},
+    [1] = { .name = "Defeat the SAMURAI",    .quest_enum = QUEST_SAMURAI,    .what_to_do = "You must defeat the SAMURAI boss (FIGHT > BOSS > SAMURAI)",       .reward_emeralds = QUEST_REWARD_FOR_BOSS},
+    [2] = { .name = "Defeat the MAGE",       .quest_enum = QUEST_MAGE,       .what_to_do = "You must defeat the MAGE boss (FIGHT > BOSS > MAGE)",             .reward_emeralds = QUEST_REWARD_FOR_BOSS},
+    [3] = { .name = "Defeat the TANK",       .quest_enum = QUEST_TANK,       .what_to_do = "You must defeat the TANK boss (FIGHT > BOSS > TANK)",             .reward_emeralds = QUEST_REWARD_FOR_BOSS},
+    [4] = { .name = "Defeat the ASSASSIN",   .quest_enum = QUEST_ASSASIN,    .what_to_do = "You must defeat the ASSASIN boss (FIGHT > BOSS > ASSASIN)",       .reward_emeralds = QUEST_REWARD_FOR_BOSS},
+    [5] = { .name = "Tame a wild wolf",      .quest_enum = QUEST_DOG,        .what_to_do = "You must tame a wild wolf using a bone (FIGHT > EXPLORE PLAINS)", .reward_emeralds = QUEST_REWARD_FOR_BOSS/2}
+};
+/*
+Whole_quest samurai_quest = {
+    .quest_enum = QUEST_SAMURAI,
+    .what_to_do = "You must defeat the SAMURAI boss (FIGHT > BOSS > SAMURAI)",
+    .reward_emeralds = 20
+};
+
+Whole_quest mage_quest = {
+    .quest_enum = QUEST_MAGE,
+    .what_to_do = "You must defeat the MAGE boss (FIGHT > BOSS > MAGE)",
+    .reward_emeralds = 20
+};
+
+Whole_quest tank_quest = {
+    .quest_enum = QUEST_TANK,
+    .what_to_do = "You must defeat the TANK boss (FIGHT > BOSS > TANK)",
+    .reward_emeralds = 20
+};
+
+Whole_quest assasin_quest = {
+    .quest_enum = QUEST_ASSASIN,
+    .what_to_do = "You must defeat the ASSASIN boss (FIGHT > BOSS > ASSASIN)",
+    .reward_emeralds = 20
+};
+
+Whole_quest dog_quest = {
+    .quest_enum = QUEST_DOG,
+    .what_to_do = "You must tame a wild wolf using a bone (FIGHT > EXPLORE PLAINS)",
+    .reward_emeralds = 10
+};*/
 
 //=======================================================
 //                        MAIN
@@ -759,10 +840,7 @@ int main(){
                         materials.current_status = trade_farmer_villager();
                     break;
                     case STATE_ADVENTURE_VILLAGER:
-                        system("cls");
-                        printf("ADVENTURE IS WORK IN PROGRESS\n");
-                        clear_screen_CONTINUE();
-                        materials.current_status = STATE_VILLAGERS;
+                        materials.current_status = trade_adventure_villager();
                     break;
                 case STATE_STORAGE:
                     system("cls");
@@ -1185,6 +1263,9 @@ void print_inventory(){
     printf(BOLD YELLOW " SAMURAI DEFEATED:       %d\n" RESET, materials.no_of_SAMURAI_defeated);
     printf(BOLD YELLOW " MAGES DEFEATED:         %d\n" RESET, materials.no_of_MAGES_defeated);
     printf(BOLD YELLOW " ASSASSIN DEFEATED:      %d\n" RESET, materials.no_of_ASSASSIN_defeated);
+
+    Whole_quest printed_quest = what_quest(materials.active_quest);
+    printf(BOLD BLUE " Quest:         %s" RESET, printed_quest.name);
     clear_screen_CONTINUE();
 
 }
@@ -1196,6 +1277,28 @@ void print_rich_villager(Menu printed_MENU){
 void print_farmer_villager(Menu printed_MENU){
     print_ascii_images("assets/pngs/farmer_villager.png");
     print_menu(printed_MENU);
+}
+void print_cowboy_villager(Menu printed_MENU){
+    print_ascii_images("assets/pngs/cowboy_villager.png");
+    print_menu(printed_MENU);
+}
+void print_cowboy_villager_and_quest(Menu printed_MENU){
+    print_ascii_images("assets/pngs/cowboy_villager.png");
+
+    Whole_quest printed_quest = what_quest(materials.active_quest);
+    
+    printf("I can give you %d emeralds for this quest:\n%s\n", printed_quest.reward_emeralds, printed_quest.what_to_do);
+
+    print_menu(printed_MENU);
+}
+
+Whole_quest what_quest(Quest searched_enum){
+    for(int i = 0; i < TOTAL_QUESTS; i++){
+        if(searched_enum == quest_book[i].quest_enum){
+            return quest_book[i];
+        }
+    }
+    return quest_book[0];
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2621,3 +2724,64 @@ State trade_farmer_villager(){
     }
 }
 
+State trade_adventure_villager(){
+    Whole_quest printed_quest;
+
+    system("cls");
+    if(materials.active_quest == QUEST_NONE){ //no quest
+        int volba = handle_2_options(&adventure_villager_do_you_want_a_quest, "", print_cowboy_villager, 1, 2);
+        if(volba == 2){
+            system("cls");
+            print_ascii_images("assets/pngs/cowboy_villager.png");
+            printf("\nAdventure villager: oh.. okay. Come to me again if youve changed your mind");
+            clear_screen_CONTINUE();
+            return STATE_VILLAGERS;
+        }
+        
+        system("cls");
+        materials.active_quest = random_quest();
+        volba = handle_2_options(&adventure_villager_do_you_accept, "", print_cowboy_villager_and_quest, 1, 2);
+        if(volba == 2){
+            system("cls");
+            print_ascii_images("assets/pngs/cowboy_villager.png");
+            printf("\nAdventure villager: oh.. okay. Come to me again if youve changed your mind and maybe ill have a different quest");
+            clear_screen_CONTINUE();
+            materials.active_quest = QUEST_NONE;
+            return STATE_VILLAGERS;
+        }
+
+        system("cls");
+        print_ascii_images("assets/pngs/cowboy_villager.png");
+
+        printed_quest = what_quest(materials.active_quest);
+        printf("\nQuest %s succesfully accepted\nAdventure villager: I wish you luck on you adventures", printed_quest.name);
+
+        clear_screen_CONTINUE();
+        return STATE_VILLAGERS;
+    }
+
+    printed_quest = what_quest(materials.active_quest);
+
+    if(printed_quest.complete_or_nah == 0){
+        system("cls");
+        print_ascii_images("assets/pngs/cowboy_villager.png");
+        printf("\nAdventure villager: Your quest says: %s", printed_quest.what_to_do);
+        clear_screen_CONTINUE();
+        return STATE_VILLAGERS;
+    }
+
+    if(printed_quest.complete_or_nah == 1){
+        system("cls");
+        print_ascii_images("assets/pngs/cowboy_villager.png");
+        printf("\nAdventure villager: Congrats on completing the quest\nHere's %d emeralds", printed_quest.reward_emeralds);
+        materials.emeralds += printed_quest.reward_emeralds;
+        clear_screen_CONTINUE();
+        return STATE_VILLAGERS;
+    }
+    return STATE_ERR;
+}
+
+Quest random_quest(){
+    int tmp_rnd = (rand() % TOTAL_QUESTS-1 )+1;
+    return tmp_rnd;
+}
