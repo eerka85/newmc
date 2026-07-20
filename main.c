@@ -1,5 +1,4 @@
-//TODO: death + coins, save, storage + pets
-//ai writing counter ----2.5---- (stinky)
+//TODO: death, storage? + pets, redo dice for emeralds and move to base, mabye redo D_or_I
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -184,6 +183,7 @@ typedef struct {
     int xtra_accuracy;
     void (*print_monster)();
     Crafting_materials loottable;
+    int emerald_drop;
 } Monster;
 
 typedef struct {
@@ -202,6 +202,8 @@ typedef struct {
     State result_state;
 } MenuMap;
 
+typedef void (*MenuPrinter)(Menu); //Menuprinter is a new type for menu print fce
+
 //=======================================================
 //                 FUNCTIONS DECLARATION
 //=======================================================
@@ -209,9 +211,9 @@ typedef struct {
 int kets();
 int move_in_menu(Menu * menu);
 
-State handle_normal_menus(Menu *using_menu, MenuMap map[]);
-int handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2);
-int handle_3_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2, int option_no3);
+State handle_normal_menus(Menu *using_menu, MenuMap map[], MenuPrinter print_menu_function);
+int handle_2_options(Menu *using_menu, char text_on_top[], MenuPrinter print_menu_function, int option_no1, int option_no2);
+int handle_3_options(Menu *using_menu, char text_on_top[], MenuPrinter print_menu_function, int option_no1, int option_no2, int option_no3);
 
 State D_or_I_menu_plus_craft(State where_am_i_state, What_do_i_craft_please variant);
 Fighting_state handle_encounter_menu(Monster chosen_monster);
@@ -228,6 +230,7 @@ void print_menu(Menu printed_MENU);
 
 void print_craft_menu(Menu printed_MENU);
 void print_inventory();
+void print_rich_villager(Menu printed_MENU);
 
 int * map_craft_enum_to_struct(What_do_i_craft_please variant);
 void ARMOR_AND_TOOLS_check_craftability_and_print_line(What_do_i_craft_please i_variant, What_do_i_craft_please d_variant, Menu printed_MENU, int i);
@@ -249,6 +252,7 @@ int is_death();
 void encounter(Monster chosen_monster);
 Fighting_state can_i_leave(Monster chosen_monster);
 Fighting_state can_i_attack(Monster * chosen_monster);
+void i_would_like_to_add_emeralds(Monster chosen_mon);
 void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name);
 Fighting_state can_i_win(Monster chosen_mon);
 Fighting_state tameing(Monster chosen_mon);
@@ -276,6 +280,8 @@ int saving();
 int loading();
 
 int print_ascii_images(char nazev[]);
+
+State trade_rich_villager();
 
 
 //=======================================================
@@ -468,8 +474,8 @@ Menu assasin_decision = {
 
 Menu villager_menu = {
     "Villagers welcome you to their village. Who will you go to?",
-    { {"1. RICH VILLAGER"}, {"2. FARMER VILLAGER"}, {"3. ADVENTURE VILLAGER"} },
-    3,
+    { {"0. Go back"}, {"1. RICH VILLAGER"}, {"2. FARMER VILLAGER"}, {"3. ADVENTURE VILLAGER"} },
+    4,
     0
 };
 MenuMap MAP_villager_menu[] = {
@@ -478,6 +484,13 @@ MenuMap MAP_villager_menu[] = {
     {2, STATE_FARMER_VILLAGER},
     {3, STATE_ADVENTURE_VILLAGER},
     {STATE_THAT_IM_IN_RN, STATE_VILLAGERS}
+};
+
+Menu rich_villager = {
+    "Rich villager: Ill give you 1 diamond for 2 emeralds, how about it?",
+    { {"1. Alright bet"}, {"2. He hell naw"} },
+    2,
+    0  
 };
 
 //=======================================================
@@ -530,7 +543,8 @@ Monster zombie = {
     .xtra_accuracy = 1,
     .hitting_resistance = 3,
     .loottable = { .iron = 1 },
-    .print_monster = print_zom
+    .print_monster = print_zom,
+    .emerald_drop = 2
 };
 
 Monster skeleton = {
@@ -542,7 +556,8 @@ Monster skeleton = {
     .xtra_accuracy = 1,
     .hitting_resistance = 4,
     .loottable = { .bones = 2 },
-    .print_monster = print_skel
+    .print_monster = print_skel,
+    .emerald_drop = 2
 };
 
 Monster sheep ={
@@ -553,7 +568,8 @@ Monster sheep ={
     .attack_dmg = 0.1f,
     .hitting_resistance = 5,
     .loottable = { .wool = 1 },
-    .print_monster = print_sheep
+    .print_monster = print_sheep,
+    .emerald_drop = 0
 };
 
 Monster wolf ={
@@ -564,7 +580,8 @@ Monster wolf ={
     .attack_dmg = 0.5f,
     .hitting_resistance = 5,
     .loottable = { .bones = 1 },
-    .print_monster = print_wolf
+    .print_monster = print_wolf,
+    .emerald_drop = 1
 };
 
 
@@ -604,7 +621,7 @@ int main(){
         switch(materials.current_status){
 
             case STATE_ENTER_GAME:
-                materials.current_status = handle_normal_menus(&enter_game, MAP_enter_game);
+                materials.current_status = handle_normal_menus(&enter_game, MAP_enter_game, print_menu);
             break;
 
             case STATE_LOAD:
@@ -613,13 +630,13 @@ int main(){
             break;
 
             case STATE_MENU:
-                materials.current_status = handle_normal_menus(&main_menu, MAP_main_menu);
+                materials.current_status = handle_normal_menus(&main_menu, MAP_main_menu, print_menu);
             break;
 
             //   CRAFT      CRAFT      CRAFT      CRAFT      CRAFT      CRAFT
 
             case STATE_CRAFT:
-                materials.current_status = handle_normal_menus(&craft_menu, MAP_craft_menu);
+                materials.current_status = handle_normal_menus(&craft_menu, MAP_craft_menu, print_craft_menu);
             break;
                 case STATE_HELMET:
                     materials.current_status = D_or_I_menu_plus_craft(STATE_HELMET, I_HELMET);
@@ -650,7 +667,7 @@ int main(){
             //   MINE      MINE      MINE      MINE      MINE      MINE   
 
             case STATE_MINE:
-                materials.current_status = handle_normal_menus(&mine_menu, MAP_mine_menu);
+                materials.current_status = handle_normal_menus(&mine_menu, MAP_mine_menu, print_menu);
             break;
 
                 case STATE_WOOD_MINE:
@@ -671,10 +688,10 @@ int main(){
             //   FIGHT      FIGHT      FIGHT      FIGHT      FIGHT      FIGHT   
 
             case STATE_FIGHT:
-                materials.current_status = handle_normal_menus(&fighting_menu, MAP_fighting_menu);
+                materials.current_status = handle_normal_menus(&fighting_menu, MAP_fighting_menu, print_menu);
             break;
                 case STATE_BOSS:
-                    materials.current_status = handle_normal_menus(&boss_menu, MAP_boss_menu);
+                    materials.current_status = handle_normal_menus(&boss_menu, MAP_boss_menu, print_menu);
                 break;
                     case STATE_SAMURAI:
                         materials.current_status = samurai_fight();
@@ -722,16 +739,13 @@ int main(){
             break;
 
             case STATE_BASE:
-                materials.current_status = handle_normal_menus(&base_menu, MAP_base_menu);
+                materials.current_status = handle_normal_menus(&base_menu, MAP_base_menu, print_menu);
             break;
                 case STATE_VILLAGERS:
-                    materials.current_status = handle_normal_menus(&villager_menu, MAP_villager_menu);
+                    materials.current_status = handle_normal_menus(&villager_menu, MAP_villager_menu, print_menu);
                 break;
                     case STATE_RICH_VILLAGER:
-                        system("cls");
-                        printf("RICH IS WORK IN PROGRESS\n");
-                        clear_screen_CONTINUE();
-                        materials.current_status = STATE_VILLAGERS;
+                        materials.current_status = trade_rich_villager();
                     break;
                     case STATE_FARMER_VILLAGER:
                         system("cls");
@@ -763,7 +777,7 @@ int main(){
                 break;
             
             case STATE_SAVE_AND_LEAVE:
-                materials.current_status = handle_normal_menus(&save_and_leave_game, MAP_save_and_leave_game);
+                materials.current_status = handle_normal_menus(&save_and_leave_game, MAP_save_and_leave_game, print_menu);
             break;
     
             case STATE_LEAVE:
@@ -872,10 +886,10 @@ int move_in_menu(Menu * menu){
 //               menu HANDLERS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-State handle_normal_menus(Menu *using_menu, MenuMap map[]) {
+State handle_normal_menus(Menu *using_menu, MenuMap map[], MenuPrinter print_menu_function) {
     system("cls"); 
     while (1) {
-        print_menu(*using_menu); 
+        print_menu_function(*using_menu);
 
         int action = move_in_menu(using_menu);
         if (action == 1) { // User pressed ENTER
@@ -891,10 +905,10 @@ State handle_normal_menus(Menu *using_menu, MenuMap map[]) {
     }
 }
 
-int handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2){
+int handle_2_options(Menu *using_menu, char text_on_top[], MenuPrinter print_menu_function, int option_no1, int option_no2){
     while(1){
         printf(YELLOW "%s" RESET, text_on_top);
-        print_menu(*using_menu);
+        print_menu_function(*using_menu);
         int action = move_in_menu(using_menu);
         if(action == 1){
             system("cls");
@@ -911,10 +925,11 @@ int handle_2_options(Menu *using_menu, char text_on_top[], int option_no1, int o
         //else contionues
     }
 }
-int handle_3_options(Menu *using_menu, char text_on_top[], int option_no1, int option_no2, int option_no3){
+
+int handle_3_options(Menu *using_menu, char text_on_top[], MenuPrinter print_menu_function, int option_no1, int option_no2, int option_no3){
     while(1){
         printf(YELLOW "%s" RESET, text_on_top);
-        print_menu(*using_menu);
+        print_menu_function(*using_menu);
         int action = move_in_menu(using_menu);
         if(action == 1){
             system("cls");
@@ -1081,43 +1096,6 @@ void print_menu(Menu printed_MENU){
     set_cursor_to_zero();
 }
 
-void print_inventory(){
-    system("cls");
-    printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
-    printf(RED    " Health:           %.1f/10\n" RESET, materials.player_hp_fighting);
-    printf(YELLOW " Logs:             %d\n" RESET, materials.wood);
-    printf(YELLOW " Iron:             %d\n" RESET, materials.iron);
-    printf(YELLOW " Diamonds:         %d\n" RESET, materials.diamonds);
-    printf(YELLOW " Bones:            %d\n" RESET, materials.bones);
-    printf(YELLOW " Leather:          %d\n" RESET, materials.leather);
-    printf(YELLOW " Wool:             %d\n" RESET, materials.wool);
-    printf(CYAN " diamond sword:      %d\n" RESET, materials.d_sword);
-    printf(GRAY " iron sword:         %d\n" RESET, materials.i_sword);
-    printf(CYAN " diamond pickaxe:    %d\n" RESET, materials.d_pickaxe);
-    printf(GRAY " iron pickaxe:       %d\n" RESET, materials.i_pickaxe);
-    printf(CYAN " diamond axe:        %d\n" RESET, materials.d_axe);
-    printf(GRAY " iron axe:           %d\n" RESET, materials.i_axe);
-    printf(CYAN " diamond helmet:     %d\n" RESET, materials.d_helmet);
-    printf(GRAY	" iron helmet:        %d\n" RESET, materials.i_helmet);
-    printf(CYAN " diamond chestplate: %d\n" RESET, materials.d_chestplate);
-    printf(GRAY " iron chestplate:    %d\n" RESET, materials.i_chestplate);
-    printf(CYAN " diamond leggings:   %d\n" RESET, materials.d_leggings);
-    printf(GRAY " iron leggings:      %d\n" RESET, materials.i_leggings);
-    printf(CYAN " diamond boots:      %d\n" RESET, materials.d_boots);
-    printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
-
-    printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
-    printf(BOLD YELLOW " SAMURAI DEFEATED:       %d\n" RESET, materials.no_of_SAMURAI_defeated);
-    printf(BOLD YELLOW " MAGES DEFEATED:         %d\n" RESET, materials.no_of_MAGES_defeated);
-    printf(BOLD YELLOW " ASSASSIN DEFEATED:      %d\n" RESET, materials.no_of_ASSASSIN_defeated);
-    clear_screen_CONTINUE();
-
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//                 CRAFTING 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 void print_craft_menu(Menu printed_MENU){
     Crafting_item current_recipe;
 
@@ -1171,6 +1149,51 @@ void print_craft_menu(Menu printed_MENU){
     }
     set_cursor_to_zero();
 }
+
+void print_inventory(){
+    system("cls");
+    printf(BOLD CYAN "\n=== INVENTORY ===\n" RESET);
+    printf(RED    " Health:           %.1f/10\n" RESET, materials.player_hp_fighting);
+    printf(YELLOW " Logs:             %d\n" RESET, materials.wood);
+    printf(YELLOW " Iron:             %d\n" RESET, materials.iron);
+    printf(YELLOW " Diamonds:         %d\n" RESET, materials.diamonds);
+    printf(YELLOW " Emeralds:         %d\n" RESET, materials.emeralds);
+    printf(YELLOW " Bones:            %d\n" RESET, materials.bones);
+    printf(YELLOW " Leather:          %d\n" RESET, materials.leather);
+    printf(YELLOW " Wool:             %d\n" RESET, materials.wool);
+    printf(CYAN " diamond sword:      %d\n" RESET, materials.d_sword);
+    printf(GRAY " iron sword:         %d\n" RESET, materials.i_sword);
+    printf(CYAN " diamond pickaxe:    %d\n" RESET, materials.d_pickaxe);
+    printf(GRAY " iron pickaxe:       %d\n" RESET, materials.i_pickaxe);
+    printf(CYAN " diamond axe:        %d\n" RESET, materials.d_axe);
+    printf(GRAY " iron axe:           %d\n" RESET, materials.i_axe);
+    printf(CYAN " diamond helmet:     %d\n" RESET, materials.d_helmet);
+    printf(GRAY	" iron helmet:        %d\n" RESET, materials.i_helmet);
+    printf(CYAN " diamond chestplate: %d\n" RESET, materials.d_chestplate);
+    printf(GRAY " iron chestplate:    %d\n" RESET, materials.i_chestplate);
+    printf(CYAN " diamond leggings:   %d\n" RESET, materials.d_leggings);
+    printf(GRAY " iron leggings:      %d\n" RESET, materials.i_leggings);
+    printf(CYAN " diamond boots:      %d\n" RESET, materials.d_boots);
+    printf(GRAY " iron boots:         %d\n" RESET, materials.i_boots);
+
+    printf(BOLD YELLOW " TANKS DEFEATED:         %d\n" RESET, materials.no_of_TANKs_defeated);
+    printf(BOLD YELLOW " SAMURAI DEFEATED:       %d\n" RESET, materials.no_of_SAMURAI_defeated);
+    printf(BOLD YELLOW " MAGES DEFEATED:         %d\n" RESET, materials.no_of_MAGES_defeated);
+    printf(BOLD YELLOW " ASSASSIN DEFEATED:      %d\n" RESET, materials.no_of_ASSASSIN_defeated);
+    clear_screen_CONTINUE();
+
+}
+
+void print_rich_villager(Menu printed_MENU){
+    print_ascii_images("assets/pngs/rich_villager.png");
+    print_menu(printed_MENU);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//                 CRAFTING 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 void ARMOR_AND_TOOLS_check_craftability_and_print_line(What_do_i_craft_please i_variant, What_do_i_craft_please d_variant, Menu printed_MENU, int i){
     if(check_resources_for_crafting(what_recipe(d_variant))){
@@ -1470,8 +1493,15 @@ Fighting_state can_i_win(Monster chosen_mon){
     i_would_like_to_add_loot(&materials.iron,     chosen_mon.loottable.iron, "iron");
     i_would_like_to_add_loot(&materials.diamonds, chosen_mon.loottable.diamonds, "diamonds");
 
+    i_would_like_to_add_emeralds(chosen_mon);
+
     clear_screen_CONTINUE();
     return F_STATE_LEAVE;
+}
+
+void i_would_like_to_add_emeralds(Monster chosen_mon){
+    printf("You gained %d emerald/s\n", chosen_mon.emerald_drop);
+    materials.emeralds += chosen_mon.emerald_drop;
 }
 
 void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name){ //ai cuz na tohlecto uz nemam
@@ -1781,7 +1811,7 @@ State tank_fight(){
 	system("cls");
 
 
-    if(handle_2_options(&start_tank_menu, "\n You walk around hilly plains and suddenly you hear a strange soud...\n", 1, 0)) return STATE_BOSS;	
+    if(handle_2_options(&start_tank_menu, "\n You walk around hilly plains and suddenly you hear a strange soud...\n", print_menu, 1, 0)) return STATE_BOSS;	
 
     system("cls"); //uvod 
 	printf(YELLOW "\n Behind one of the hills appears.... " RESET);
@@ -1955,7 +1985,7 @@ State samurai_fight(){
         
         char buffer[50];
         sprintf(buffer, "Boss HP: %d | Your HP: %d", boss_hp, player_hp); //ts coool
-        switch(handle_2_options(&samurai_PATAK, buffer, 1, 0)){
+        switch(handle_2_options(&samurai_PATAK, buffer, print_menu, 1, 0)){
             case 1:
                 damage = 1;
                 if (materials.d_sword > 0) {
@@ -2011,7 +2041,7 @@ State samurai_fight(){
         }
 
         sprintf(buffer, "Boss HP: %d | Your HP: %d", boss_hp, player_hp); //ts coool
-        switch(handle_2_options(&samurai_BOSSS_attack, buffer, 1, 0)){
+        switch(handle_2_options(&samurai_BOSSS_attack, buffer, print_menu, 1, 0)){
             case 1:
                 if (p_dodge_chance <= 30) {
                     printf(GREEN "You successfully dodged the attack!\n" RESET);
@@ -2133,7 +2163,7 @@ State mage_fight(){
             printf ("\n");
             clear_screen_CONTINUE();
         }
-        p_attack = handle_2_options(&mage_at_or_leave, "", 1, 0);
+        p_attack = handle_2_options(&mage_at_or_leave, "", print_menu, 1, 0);
         switch (p_attack) {
             case 1:
                 damage = 1;
@@ -2186,7 +2216,7 @@ State mage_fight(){
                 clear_screen_CONTINUE();
             break;
         }
-        p_attack = handle_3_options(&mage_attack_u, "", 1, 2, 3);
+        p_attack = handle_3_options(&mage_attack_u, "", print_menu, 1, 2, 3);
         switch (p_attack) {
             // Blue - Defend, Red - Dodge, Purple - Attack
         case 1:
@@ -2275,7 +2305,7 @@ State assassin_fight(){
 
         char buffer[50];
         sprintf(buffer, "Boss HP: %d | Your HP: %d\n", boss_hp, player_hp);
-        p_attack = handle_3_options(&assasin_decision, buffer, 1, 2, 3); // choose where to attack
+        p_attack = handle_3_options(&assasin_decision, buffer, print_menu, 1, 2, 3); // choose where to attack
 
         if (p_attack == e_pos + 1){
             printf(GREEN "You successfully hit the assassin!\n" RESET);
@@ -2323,7 +2353,7 @@ State dice_game(){
 	int dv2;
 	int dp1;
 	int dp2;
-	volba_d = handle_2_options(&dice_menu, "", 1, 0);
+	volba_d = handle_2_options(&dice_menu, "", print_menu, 1, 0);
 	switch(volba_d){
 		case 0:
             system("cls");
@@ -2460,8 +2490,6 @@ int loading(){
 
 
 int print_ascii_images(char nazev[]){
-    system("cls");
-
     FILE * Pimg = fopen(nazev, "rb");
     if(Pimg == NULL){
         printf("couldnt open");
@@ -2523,6 +2551,38 @@ int print_ascii_images(char nazev[]){
     // 5. Reset terminal color so the rest of your app doesn't stay colored
     printf("\033[0m\n");
 
-    clear_screen_CONTINUE();
     return 0; // Don't forget to return 0 for success!
 }
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//                 VILLAGERS
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+//rich trades diamonds for emeralds
+//farmer sells bread (heal) for emeralds
+//cowboy gives emeralds for quests (kill boss, win dice, tame a dog)
+
+State trade_rich_villager(){
+    system("cls");
+    int volba = handle_2_options(&rich_villager, "", print_rich_villager, 1, 2);
+    switch(volba){
+        case 1:
+            if(materials.emeralds >= 2){
+                materials.diamonds++;
+                materials.emeralds -= 2;
+                printf("succesfully trades 2 emeralds for 1 diamond\n");
+            }
+            else{
+                printf("not enough emeralds\n");
+            }
+            clear_screen_CONTINUE();
+            return STATE_VILLAGERS;
+        break;
+
+        case 2:
+            return STATE_VILLAGERS;
+        break;
+    }
+}
+
