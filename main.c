@@ -56,13 +56,12 @@ typedef enum {
         STATE_EXPLORE_PLAINS,
         STATE_EXPLORE_CAVES,
     STATE_INVENTORY,
-    STATE_HEAL,
+    STATE_GAMBA,
     STATE_BASE,
         STATE_VILLAGERS,
             STATE_RICH_VILLAGER,
             STATE_FARMER_VILLAGER,
             STATE_ADVENTURE_VILLAGER,
-        STATE_STORAGE,
         STATE_PETS,
     STATE_SAVE_AND_LEAVE,
     STATE_LEAVE,
@@ -223,16 +222,28 @@ typedef struct {
 
 typedef void (*MenuPrinter)(Menu); //Menuprinter is a new type for menu print fce
 
+typedef struct {
+    const char *main_label;
+    int        min;
+    int        max;
+    int        pos_menu;
+} Slider;
+
+typedef void (*SliderPrinter)(Slider);
+
+
 //=======================================================
 //                 FUNCTIONS DECLARATION
 //=======================================================
 
 int kets();
 int move_in_menu(Menu * menu);
+int move_in_slider(Slider * slider);
 
 State handle_normal_menus(Menu *using_menu, MenuMap map[], MenuPrinter print_menu_function);
 int handle_2_options(Menu *using_menu, char text_on_top[], MenuPrinter print_menu_function, int option_no1, int option_no2);
 int handle_3_options(Menu *using_menu, char text_on_top[], MenuPrinter print_menu_function, int option_no1, int option_no2, int option_no3);
+int handle_normal_sliders(Slider *used_slider, SliderPrinter printer_function);
 
 State D_or_I_menu_plus_craft(State where_am_i_state, What_do_i_craft_please variant);
 Fighting_state handle_encounter_menu(Monster chosen_monster);
@@ -246,6 +257,8 @@ int input_string(char inputed_str[], int inputed_str_size,char outputed_text[]);
 void set_cursor_to_zero();
 void clear_screen_CONTINUE();
 void print_menu(Menu printed_MENU);
+
+void print_slider(Slider printed_slider);
 
 void print_craft_menu(Menu printed_MENU);
 void print_inventory();
@@ -323,8 +336,8 @@ void quest_cleared(Quest quest);
 
 Menu main_menu = {
     "main menu",
-    { {"0. LEAVE"}, {"1. CRAFT"}, {"2. MINE"}, {"3. FIGHT"}, {"4. INVENTORY"}, {"5. HEAL"}, {"6. BASE"} },
-    7,
+    { {"0. LEAVE"}, {"1. CRAFT"}, {"2. MINE"}, {"3. FIGHT"}, {"4. INVENTORY"}, {"5. BASE"} },
+    6,
     0 //pos
 };
 MenuMap MAP_main_menu[] = {
@@ -333,8 +346,7 @@ MenuMap MAP_main_menu[] = {
     {2, STATE_MINE},
     {3, STATE_FIGHT},
     {4, STATE_INVENTORY},
-    {5, STATE_HEAL},
-    {6, STATE_BASE},
+    {5, STATE_BASE},
     {STATE_THAT_IM_IN_RN, STATE_MENU}
 };
 
@@ -403,14 +415,14 @@ MenuMap MAP_boss_menu[] = {
 
 Menu base_menu = {
     "base menu",
-    { {"0. BACK"}, {"1. VILLAGERS"}, {"2. STORAGE (WIP)"}, {"3. PETS (WIP)"} },
+    { {"0. BACK"}, {"1. VILLAGERS"}, {"2. PLAY DICE"}, {"3. PETS (WIP)"} },
     4,
     0 //pos
 };
 MenuMap MAP_base_menu[] = {
     {0, STATE_MENU},
     {1, STATE_VILLAGERS},
-    {2, STATE_STORAGE},
+    {2, STATE_GAMBA},
     {3, STATE_PETS},
     {STATE_THAT_IM_IN_RN, STATE_BASE}
 };
@@ -491,7 +503,7 @@ MenuMap MAP_save_and_leave_game[] = {
 };
 
 Menu dice_menu = {
-    "PLAY DICE WITH VILLAGER FOR FOOD?",
+    "PLAY DICE WITH VILLAGER FOR EMERALDS?",
     { {"1. YES"}, {"0. Go back"} },
     2,
     0
@@ -550,6 +562,20 @@ Menu adventure_villager_delete = {
     { {"1. Yes"}, {"2. No, go back"} },
     2,
     0  
+};
+
+Slider how_many_emeralds = {
+    .main_label = "How many emeralds do you want to bet",
+    .min = 0,
+    .max = 0,
+    .pos_menu = 0
+};
+
+Menu whanna_continue = {
+    .main_label = "do you want to try again?",
+    .choices = { {"1. YES"}, {"2. NO"} },
+    .total = 2,
+    .pos_menu = 0
 };
 
 //=======================================================
@@ -804,7 +830,7 @@ int main(){
                 materials.current_status = STATE_MENU;
             break;
 
-            case STATE_HEAL:
+            case STATE_GAMBA:
                 materials.current_status = dice_game();
             break;
 
@@ -823,12 +849,6 @@ int main(){
                     case STATE_ADVENTURE_VILLAGER:
                         materials.current_status = trade_adventure_villager();
                     break;
-                case STATE_STORAGE:
-                    system("cls");
-                    printf("STORAGE\n");
-                    clear_screen_CONTINUE();
-                    materials.current_status = STATE_BASE;
-                break;
                 case STATE_PETS:
                     system("cls");
                     printf("PETS\n");
@@ -934,6 +954,36 @@ int move_in_menu(Menu * menu){
             }
             else{
                 menu->pos_menu--;
+            }
+        break;
+        case 13:
+            return 1;
+        break;
+
+        default:
+            return 0;
+        break;
+    }
+    return 0;
+}
+
+int move_in_slider(Slider * slider){
+    int input = kets();
+    switch(input){
+        case 1072:
+            if(slider->pos_menu == slider->max){
+
+            }
+            else{
+                slider->pos_menu++;
+            }
+        break;
+        case 1080:
+            if(slider->pos_menu == slider->min){
+
+            }
+            else{
+                slider->pos_menu--;
             }
         break;
         case 13:
@@ -1282,6 +1332,42 @@ Whole_quest what_quest(Quest searched_enum){
     return quest_book[0];
 }
 
+
+void print_slider(Slider printed_slider){
+    printf(" ======%s======\n\n", printed_slider.main_label);
+
+    if(printed_slider.pos_menu != printed_slider.max){
+        printf("   %d                   \n", printed_slider.pos_menu +1);
+    } 
+    else{
+        printf("                        \n");
+    }
+
+    printf(" = %d =                     \n", printed_slider.pos_menu);
+
+    if(printed_slider.pos_menu != printed_slider.min){
+        printf("   %d                   \n", printed_slider.pos_menu -1);
+    }
+    else{
+        printf("                        \n");
+    }
+    
+
+    set_cursor_to_zero();
+}
+
+int handle_normal_sliders(Slider *used_slider, SliderPrinter printer_function){
+    system("cls");
+    while(1){
+        printer_function(*used_slider);
+        int action = move_in_slider(used_slider);
+        if(action == 1){
+            system("cls");
+            return used_slider->pos_menu;
+        }
+        //else continues
+    }
+}
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //                 CRAFTING 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2445,7 +2531,10 @@ State assassin_fight(){
 }
 
 State dice_game(){
+    char buffer[100];
     int volba_d = 0;
+    int volba_leave = 0;
+    int eme_bet = 0;
 	int villager_dice_roll = 0;
 	int p_dice_roll = 0;
 	int dv1;
@@ -2456,10 +2545,14 @@ State dice_game(){
 	switch(volba_d){
 		case 0:
             system("cls");
-			return STATE_MENU;
+			return STATE_BASE;
 		break;
 		case 1:
 			while(1){
+                how_many_emeralds.min = 0;
+                how_many_emeralds.max = materials.emeralds;
+                eme_bet = handle_normal_sliders(&how_many_emeralds, print_slider);
+                materials.emeralds -= eme_bet;
 				//vil roll - ((rand() %6)+1)
 				dv1 =((rand() %6)+1);
 				dv2 =((rand() %6)+1);
@@ -2475,33 +2568,30 @@ State dice_game(){
 				p_dice_roll = dp1 + dp2;
 				printf(RED "\n You rolled %d," RESET, p_dice_roll);
 				if(p_dice_roll > villager_dice_roll){
-					printf(GREEN "\n yay YOU WON yay\n Adding 3hp..." RESET);
-					materials.player_hp_fighting = materials.player_hp_fighting +3.0f;
-					if(materials.player_hp_fighting > 10.0f){
-						materials.player_hp_fighting = 10.0f;
-					}
                     clear_screen_CONTINUE();
-					return STATE_MENU;
+                    buffer[100];
+					sprintf(buffer, "\n yay YOU WON yay\n Adding %d emerald/s...\n", eme_bet *2);
+					materials.emeralds += eme_bet *2;
+
+                    volba_leave = handle_2_options(&whanna_continue, buffer, print_menu, 1, 2);
+                    if(volba_leave == 2) return STATE_BASE;
+                    else continue;
 				}
 				else if(villager_dice_roll == p_dice_roll){
-					printf(WHITE "\n Draw...\n Adding 1 hp..."RESET);
-					materials.player_hp_fighting = materials.player_hp_fighting +1.0f;
-					if(materials.player_hp_fighting > 10.0f){
-						materials.player_hp_fighting = 10.0f;
-                        clear_screen_CONTINUE();
-                        return STATE_MENU;
-					}
-					printf(YELLOW "\n TRY AGAIN? (press ENTER)" RESET);
-					getchar();
-					clear_screen_CONTINUE();
-					continue;
+                    clear_screen_CONTINUE();
+                    buffer[100];
+					sprintf(buffer, "\n Draw...\n Giving back %d emerald/s...\n", eme_bet);
+					materials.player_hp_fighting += eme_bet;
+
+					volba_leave = handle_2_options(&whanna_continue, buffer, print_menu, 1, 2);
+                    if(volba_leave == 2) return STATE_BASE;
+                    else continue;
 				}
 				else{
-					printf(RED "\n xxx YOU LOST xxx" RESET);
-					printf(YELLOW "\n TRY AGAIN? (press ENTER)" RESET);
-					getchar();
-					clear_screen_CONTINUE();
-					continue;
+                    clear_screen_CONTINUE();
+					volba_leave = handle_2_options(&whanna_continue, "YOU LOST\n", print_menu, 1, 2);
+                    if(volba_leave == 2) return STATE_BASE;
+                    else continue;
 				}
 			}
 		break;
