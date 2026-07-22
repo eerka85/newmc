@@ -1,4 +1,4 @@
-//TODO: death, storage? + pets, redo dice for emeralds and move to base, mabye redo D_or_I, caves, limit mines to day night cycle?
+//TODO: pets? caves
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,18 +12,18 @@
 
 #include "art.h"
 
-#define NO_OF_CREATED_CHOICES 15
-#define MAX_PALYER_HP_FIGHTING 10.0f
-#define STATE_THAT_IM_IN_RN 999
+#define NO_OF_CREATED_CHOICES   15
+#define MAX_PALYER_HP_FIGHTING  10.0f
+#define STATE_THAT_IM_IN_RN     999
 
-#define QUEST_REWARD_FOR_BOSS 20
+#define QUEST_REWARD_FOR_BOSS   20 //half of this is wolf
 
 #define D_SWORD_DMG    2.5f
 #define I_SWORD_DMG    2.0f
 #define BAREHANDED_DMG 1.5f
 
-#define D_ARMOR_PIECE 1.0f
-#define I_ARMOR_PIECE 0.5f
+#define D_ARMOR_PIECE  1.0f
+#define I_ARMOR_PIECE  0.5f
 
 
 #define TANK_DAMAGE_TRESHOLD 2
@@ -996,6 +996,7 @@ int move_in_slider(Slider * slider){
     }
     return 0;
 }
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //               menu HANDLERS
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1468,6 +1469,18 @@ void crafting_jew(Crafting_item recipe){
 
 void wood_mine(){
     system("cls");
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
 	int chance_wood = rand () % 100;
 	if(materials.d_axe >= 1){
 		chance_wood = chance_wood - 20;
@@ -1499,6 +1512,18 @@ void wood_mine(){
 
 void iron_mine () {
     system("cls");
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
 	int chance_iron = rand () % 100;
 	if(materials.d_pickaxe >= 1){
 		chance_iron = chance_iron - 20;
@@ -1524,6 +1549,18 @@ void iron_mine () {
 
 void diamond_mine() {
     system("cls");
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
+    printf(" .\n");
+    Sleep(500);
 	int chance_diamonds = rand () % 100;
 	if(materials.d_pickaxe >= 1){
 		chance_diamonds = chance_diamonds - 20;
@@ -1547,6 +1584,7 @@ void diamond_mine() {
 	}
     clear_screen_CONTINUE();
 }
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //                   FIGTING
