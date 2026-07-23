@@ -288,7 +288,7 @@ void plains();
 int is_death();
 
 void encounter(Monster chosen_monster);
-Fighting_state can_i_leave(Monster chosen_monster);
+Fighting_state can_i_leave(Monster * chosen_monster);
 Fighting_state can_i_attack(Monster * chosen_monster);
 void i_would_like_to_add_emeralds(Monster chosen_mon);
 void i_would_like_to_add_loot(int *inventory_ptr, int max_amount, const char *item_name);
@@ -296,7 +296,7 @@ Fighting_state can_i_win(Monster chosen_mon);
 Fighting_state tameing(Monster chosen_mon);
 void calc_equipment();
 float better_armor(int d_variant, int i_variant);
-void monster_attack(Monster chosen_monster);
+void monster_attack(Monster * chosen_monster);
 
 int dodge_TANK();
 int dmg_TANK();
@@ -327,6 +327,8 @@ State trade_farmer_villager();
 State trade_adventure_villager();
 void quest_cleared(Quest quest);
 
+void print_bat_png();
+void print_creeper_png();
 
 //=======================================================
 //                     MENU CREATION
@@ -654,7 +656,7 @@ Monster sheep ={
     .running_resistance = 1,
     .name = "Sheep",
     .attack_dmg = 0.1f,
-    .hitting_resistance = 5,
+    .hitting_resistance = 3,
     .loottable = { .wool = 1 },
     .print_monster = print_sheep,
     .emerald_drop = 0
@@ -666,10 +668,35 @@ Monster wolf ={
     .running_resistance = 3,                
     .name = "Wolf",
     .attack_dmg = 0.5f,
-    .hitting_resistance = 5,
+    .hitting_resistance = 4,
     .loottable = { .bones = 1 },
     .print_monster = print_wolf,
     .emerald_drop = 1
+};
+
+Monster bat = {
+    .hp_mon = 2.5f,
+    .max_hp = 2.5f,
+    .running_resistance = 1,
+    .name = "bat",
+    .attack_dmg = 0.2f,
+    .hitting_resistance = 6,
+    .loottable = {},
+    .print_monster = print_bat_png,
+    .emerald_drop = 1
+};
+
+Monster Creeper = { //dies at monster attack
+    .hp_mon = 5.0f,
+    .max_hp = 5.0f,
+    .running_resistance = 6,
+    .name = "Creeper",
+    .attack_dmg = 5.0f,
+    .xtra_accuracy = -3,
+    .hitting_resistance = 3,
+    .loottable = { .diamonds = 1 },
+    .print_monster = print_creeper_png,
+    .emerald_drop = 2
 };
 
 Whole_quest quest_book[] = {
@@ -820,6 +847,7 @@ int main(){
                     system("cls");
                     printf("EXPLORE CAVES IS WORK IN PROGRESS\n");
                     clear_screen_CONTINUE();
+                    encounter(Creeper);
                     materials.current_status = STATE_FIGHT;
                 break;
 
@@ -1637,7 +1665,7 @@ void encounter(Monster chosen_monster){
             break;
 
             case F_STATE_RUN:
-                materials.current_F_state = can_i_leave(chosen_monster); 
+                materials.current_F_state = can_i_leave(&chosen_monster); 
             break;
 
             case F_STATE_ATTACK:
@@ -1646,7 +1674,6 @@ void encounter(Monster chosen_monster){
 
             case F_STATE_TAME:
                 materials.current_F_state = tameing(chosen_monster);
-                clear_screen_CONTINUE();
             break;
 
             case F_STATE_WIN:
@@ -1661,10 +1688,10 @@ void encounter(Monster chosen_monster){
     }
 }
 
-Fighting_state can_i_leave(Monster chosen_monster){
+Fighting_state can_i_leave(Monster * chosen_monster){
     system("cls");
     int tmp = rand() % 11;
-    tmp = tmp - chosen_monster.running_resistance;
+    tmp = tmp - chosen_monster->running_resistance;
     if(tmp >= 0){
         printf(GREEN " ESCASPED SUCCEFULLY\n" RESET);
         clear_screen_CONTINUE();
@@ -1674,9 +1701,9 @@ Fighting_state can_i_leave(Monster chosen_monster){
         printf(RED " XXX COULDNT ESCAPE... XXX\n" RESET);
         clear_screen_CONTINUE();
         monster_attack(chosen_monster);
+        clear_screen_CONTINUE();
         return F_STATE_MENU;
     }
-    clear_screen_CONTINUE();
 }
 
 Fighting_state can_i_attack(Monster * chosen_monster){
@@ -1688,12 +1715,14 @@ Fighting_state can_i_attack(Monster * chosen_monster){
         chosen_monster->hp_mon -= materials.attack_dmg;
         printf(BOLD " ATTACK HIT for %.1f\n" RESET, materials.attack_dmg);
         clear_screen_CONTINUE();
-        monster_attack(*chosen_monster);
+        monster_attack(chosen_monster);
+        clear_screen_CONTINUE();
     }
     else{
         printf(BOLD " ATTACK MISSED\n" RESET);
         clear_screen_CONTINUE();
-        monster_attack(*chosen_monster);
+        monster_attack(chosen_monster);
+        clear_screen_CONTINUE();
     }
 
     clear_screen_CONTINUE();
@@ -1771,7 +1800,8 @@ Fighting_state tameing(Monster chosen_mon){
             printf(RED " WOLF NOT TAMED. TRY AGAIN?\n CONSUMED 1 BONES\n" RESET);
             materials.bones = materials.bones -1;
             clear_screen_CONTINUE();
-            monster_attack(chosen_mon);
+            monster_attack(&chosen_mon);
+            clear_screen_CONTINUE();
             return F_STATE_MENU;  
         }   
     }
@@ -1803,18 +1833,22 @@ float better_armor(int d_variant, int i_variant){
     return (d_variant) ? D_ARMOR_PIECE : (i_variant) ? I_ARMOR_PIECE : 0.0f;
 }
 
-void monster_attack(Monster chosen_monster){
-    printf(" %s attacks back!\n", chosen_monster.name);
+void monster_attack(Monster * chosen_monster){
+    printf(" %s attacks back!\n", chosen_monster->name);
     int tmp = rand() %10;
     tmp -= materials.protection_armor;
-    tmp += chosen_monster.xtra_accuracy;
+    tmp += chosen_monster->xtra_accuracy;
 
     if(tmp > 5){
-        materials.player_hp_fighting -= chosen_monster.attack_dmg;
-        printf( RED" Took %.1f damage from %s" RESET, chosen_monster.attack_dmg, chosen_monster.name);
+        materials.player_hp_fighting -= chosen_monster->attack_dmg;
+        printf( RED" Took %.1f damage from %s" RESET, chosen_monster->attack_dmg, chosen_monster->name);
+        if(strcmp(chosen_monster->name, "Creeper") == 0){
+            chosen_monster->hp_mon = 0;
+            printf( GREEN "\n The creeper dies from its explosion attack\n" RESET);
+        }
     }
     else{
-        printf( GREEN " %s's attack didnt even hurt" RESET, chosen_monster.name);
+        printf( GREEN " %s's attack didnt even hurt" RESET, chosen_monster->name);
     }
 
     is_death();
@@ -2722,7 +2756,7 @@ int print_ascii_images(char nazev[]){
         printf("couldnt open");
         clear_screen_CONTINUE();
         fclose(Pimg);
-        return 1;
+        exit(1);
     }
 
 
@@ -2730,9 +2764,11 @@ int print_ascii_images(char nazev[]){
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
+        printf("couldnt find info");
+        clear_screen_CONTINUE();
         png_destroy_read_struct(&png_ptr, NULL, NULL);
         fclose(Pimg);
-        return 2;
+        exit(2);
     }
 
     png_init_io(png_ptr, Pimg);
@@ -2779,6 +2815,13 @@ int print_ascii_images(char nazev[]){
     printf("\033[0m\n");
 
     return 0; // Don't forget to return 0 for success!
+}
+
+void print_bat_png(){
+    print_ascii_images("assets/pngs/bat.png");
+}
+void print_creeper_png(){
+    print_ascii_images("assets/pngs/creeper.png");
 }
 
 
@@ -2927,3 +2970,4 @@ void quest_cleared(Quest quest){
     materials.quest_complete_or_nah = 1;
     clear_screen_CONTINUE();
 }
+

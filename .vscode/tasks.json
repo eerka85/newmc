@@ -10,6 +10,7 @@
                 "-g",
                 "${file}",
                 "-o",
+                /*"-static",*/
                 "${fileDirname}/${fileBasenameNoExtension}.exe",
                 "-lpng16",
                 "-lz"
