@@ -1,4 +1,4 @@
-//TODO: pets? caves
+//TODO: pets?
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,7 +63,7 @@ typedef enum {
             STATE_RICH_VILLAGER,
             STATE_FARMER_VILLAGER,
             STATE_ADVENTURE_VILLAGER,
-        STATE_PETS,
+        STATE_SLEEP,
     STATE_SAVE_AND_LEAVE,
     STATE_LEAVE,
     STATE_SAVE,
@@ -335,6 +335,8 @@ void quest_cleared(Quest quest);
 void print_bat_png();
 void print_creeper_png();
 
+void sleeeep();
+
 //=======================================================
 //                     MENU CREATION
 //=======================================================
@@ -422,7 +424,7 @@ MenuMap MAP_boss_menu[] = {
 
 Menu base_menu = {
     "base menu",
-    { {"0. BACK"}, {"1. VILLAGERS"}, {"2. PLAY DICE"}, {"3. PETS (WIP)"} },
+    { {"0. BACK"}, {"1. VILLAGERS"}, {"2. PLAY DICE"}, {"3. SLEEP"} },
     4,
     0 //pos
 };
@@ -430,7 +432,7 @@ MenuMap MAP_base_menu[] = {
     {0, STATE_MENU},
     {1, STATE_VILLAGERS},
     {2, STATE_GAMBA},
-    {3, STATE_PETS},
+    {3, STATE_SLEEP},
     {STATE_THAT_IM_IN_RN, STATE_BASE}
 };
 
@@ -580,6 +582,13 @@ Slider how_many_emeralds = {
 
 Menu whanna_continue = {
     .main_label = "do you want to try again?",
+    .choices = { {"1. YES"}, {"2. NO"} },
+    .total = 2,
+    .pos_menu = 0
+};
+
+Menu whanna_sleep = {
+    .main_label = "Would you like to sleep in my house for 1 emerald to skip the night?",
     .choices = { {"1. YES"}, {"2. NO"} },
     .total = 2,
     .pos_menu = 0
@@ -889,10 +898,6 @@ int main(){
                 materials.current_status = STATE_MENU;
             break;
 
-            case STATE_GAMBA:
-                materials.current_status = dice_game();
-            break;
-
             case STATE_BASE:
                 materials.current_status = handle_normal_menus(&base_menu, MAP_base_menu, print_menu);
             break;
@@ -908,14 +913,13 @@ int main(){
                     case STATE_ADVENTURE_VILLAGER:
                         materials.current_status = trade_adventure_villager();
                     break;
-                case STATE_PETS:
-                    system("cls");
-                    printf("PETS\n");
-                    materials.diamonds += 99;
-                    materials.bones += 99;
-                    materials.iron += 99;
-                    materials.wood += 99;
-                    clear_screen_CONTINUE();
+
+                case STATE_GAMBA:
+                    materials.current_status = dice_game();
+                break;
+
+                case STATE_SLEEP:
+                    sleeeep();
                     materials.current_status = STATE_BASE;
                 break;
             
@@ -1384,6 +1388,10 @@ void print_cowboy_villager_and_quest(Menu printed_MENU){
     
     printf("I can give you %d emeralds for this quest:\n%s\n", searched_quest.reward_emeralds, searched_quest.what_to_do);
 
+    print_menu(printed_MENU);
+}
+void print_vanila_villager(Menu printed_MENU){
+    print_ascii_images("assets/pngs/vanila_villager.png");
     print_menu(printed_MENU);
 }
 
@@ -2685,8 +2693,8 @@ State assassin_fight(){
 
 State dice_game(){
     char buffer[100];
-    int volba_d = 0;
-    int volba_leave = 0;
+    int choice_d = 0;
+    int choice_leave = 0;
     int eme_bet = 0;
 	int villager_dice_roll = 0;
 	int p_dice_roll = 0;
@@ -2694,8 +2702,8 @@ State dice_game(){
 	int dv2;
 	int dp1;
 	int dp2;
-	volba_d = handle_2_options(&dice_menu, "", print_menu, 1, 0);
-	switch(volba_d){
+	choice_d = handle_2_options(&dice_menu, "", print_menu, 1, 0);
+	switch(choice_d){
 		case 0:
             system("cls");
 			return STATE_BASE;
@@ -2726,8 +2734,8 @@ State dice_game(){
 					sprintf(buffer, "\n yay YOU WON yay\n Adding %d emerald/s...\n", eme_bet *2);
 					materials.emeralds += eme_bet *2;
 
-                    volba_leave = handle_2_options(&whanna_continue, buffer, print_menu, 1, 2);
-                    if(volba_leave == 2) return STATE_BASE;
+                    choice_leave = handle_2_options(&whanna_continue, buffer, print_menu, 1, 2);
+                    if(choice_leave == 2) return STATE_BASE;
                     else continue;
 				}
 				else if(villager_dice_roll == p_dice_roll){
@@ -2736,14 +2744,14 @@ State dice_game(){
 					sprintf(buffer, "\n Draw...\n Giving back %d emerald/s...\n", eme_bet);
 					materials.player_hp_fighting += eme_bet;
 
-					volba_leave = handle_2_options(&whanna_continue, buffer, print_menu, 1, 2);
-                    if(volba_leave == 2) return STATE_BASE;
+					choice_leave = handle_2_options(&whanna_continue, buffer, print_menu, 1, 2);
+                    if(choice_leave == 2) return STATE_BASE;
                     else continue;
 				}
 				else{
                     clear_screen_CONTINUE();
-					volba_leave = handle_2_options(&whanna_continue, "YOU LOST\n", print_menu, 1, 2);
-                    if(volba_leave == 2) return STATE_BASE;
+					choice_leave = handle_2_options(&whanna_continue, "YOU LOST\n", print_menu, 1, 2);
+                    if(choice_leave == 2) return STATE_BASE;
                     else continue;
 				}
 			}
@@ -2834,7 +2842,7 @@ int loading(){
 int print_ascii_images(char nazev[]){
     FILE * Pimg = fopen(nazev, "rb");
     if(Pimg == NULL){
-        printf("couldnt open");
+        printf("couldnt open %s", nazev);
         clear_screen_CONTINUE();
         fclose(Pimg);
         exit(1);
@@ -2873,6 +2881,10 @@ int print_ascii_images(char nazev[]){
 
     for(int i = 0; i < height; i++){
         for(int j = 0; j < width; j++){
+            if(row_pointers[i][j*4] == 0 && row_pointers[i][j*4+1] == 0 && row_pointers[i][j*4+2] == 0){
+                printf(RESET"  ");
+                continue;
+            }
             printf("\033[48;2;%d;%d;%dm  ", row_pointers[i][j*4], row_pointers[i][j*4+1], row_pointers[i][j*4+2]);
         }
         printf("\n");
@@ -2916,8 +2928,8 @@ void print_creeper_png(){
 
 State trade_rich_villager(){
     system("cls");
-    int volba = handle_2_options(&rich_villager, "", print_rich_villager, 1, 2);
-    switch(volba){
+    int choice = handle_2_options(&rich_villager, "", print_rich_villager, 1, 2);
+    switch(choice){
         case 1:
             if(materials.emeralds >= 2){
                 materials.diamonds++;
@@ -2939,8 +2951,8 @@ State trade_rich_villager(){
 
 State trade_farmer_villager(){
     system("cls");
-    int volba = handle_2_options(&farmer_villager, "", print_farmer_villager, 1, 2);
-    switch(volba){
+    int choice = handle_2_options(&farmer_villager, "", print_farmer_villager, 1, 2);
+    switch(choice){
         case 1:
             if(materials.emeralds >= 1){
                 materials.player_hp_fighting += 2;
@@ -2965,12 +2977,12 @@ State trade_farmer_villager(){
 
 State trade_adventure_villager(){
     Whole_quest searched_quest;
-    int volba = 0;
+    int choice = 0;
 
     system("cls");
     if(materials.active_quest == QUEST_NONE){ //no quest
-        volba = handle_2_options(&adventure_villager_do_you_want_a_quest, "", print_cowboy_villager, 1, 2);
-        if(volba == 2){
+        choice = handle_2_options(&adventure_villager_do_you_want_a_quest, "", print_cowboy_villager, 1, 2);
+        if(choice == 2){
             system("cls");
             print_ascii_images("assets/pngs/cowboy_villager.png");
             printf("\nAdventure villager: oh.. okay. Come to me again if youve changed your mind");
@@ -2980,8 +2992,8 @@ State trade_adventure_villager(){
         
         system("cls");
         materials.active_quest = random_quest();
-        volba = handle_2_options(&adventure_villager_do_you_accept, "", print_cowboy_villager_and_quest, 1, 2);
-        if(volba == 2){
+        choice = handle_2_options(&adventure_villager_do_you_accept, "", print_cowboy_villager_and_quest, 1, 2);
+        if(choice == 2){
             system("cls");
             print_ascii_images("assets/pngs/cowboy_villager.png");
             printf("\nAdventure villager: oh.. okay. Come to me again if youve changed your mind and maybe ill have a different quest");
@@ -3008,8 +3020,8 @@ State trade_adventure_villager(){
         printf("\nAdventure villager: Your quest says: %s", searched_quest.what_to_do);
         clear_screen_CONTINUE();
 
-        volba = handle_2_options(&adventure_villager_delete, "", print_cowboy_villager, 1, 2);
-        if(volba == 2){
+        choice = handle_2_options(&adventure_villager_delete, "", print_cowboy_villager, 1, 2);
+        if(choice == 2){
             return STATE_VILLAGERS;
         }
 
@@ -3052,3 +3064,46 @@ void quest_cleared(Quest quest){
     clear_screen_CONTINUE();
 }
 
+void sleeeep(){
+    system("cls");
+    if(materials.call_of_the_night > 0){
+        print_ascii_images("assets/pngs/vanila_villager.png");
+        printf("\nYou cant sleep during the day, cuz idk?");
+        clear_screen_CONTINUE();
+        return;
+    }
+    else{
+        int choice = handle_2_options(&whanna_sleep, "You look like you need some sleep\n\n", print_vanila_villager, 1, 2);
+        system("cls");
+        if(choice == 1){
+            if(materials.emeralds <= 0){
+                print_ascii_images("assets/pngs/vanila_villager.png");
+                printf("Im sorry you dont have enough emeralds i dont do charity");
+                clear_screen_CONTINUE();
+                return;
+            }
+            else{
+                printf("\n.");
+                Sleep(500);
+                printf("\n.");
+                Sleep(500);
+                printf("\n.");
+                Sleep(500);
+                printf("\n.");
+                Sleep(500);
+                printf("Youve slept the whole night soundly");
+                materials.call_of_the_night = 5;
+                materials.emeralds --;
+                clear_screen_CONTINUE();
+                return;
+            }
+        }
+        else{
+            print_ascii_images("assets/pngs/vanila_villager.png");
+            printf("oh.. okay come back to me if you change your mind");
+            clear_screen_CONTINUE();
+            return;
+        }
+    }
+}
+// ☆*: .｡. o(≧▽≦)o .｡.:*☆ 
