@@ -594,6 +594,13 @@ Menu whanna_sleep = {
     .pos_menu = 0
 };
 
+Menu no_save_file = {
+    .main_label = "Cant find your name?",
+    .choices = { {"1. START NEW GAME"}, {"2. TRY AGAIN"} },
+    .total = 2,
+    .pos_menu = 0
+};
+
 //=======================================================
 //                   typedef CREATION
 //=======================================================
@@ -2807,18 +2814,21 @@ int loading(){
     while(1){
         input_string(actual_file_name, 32, "Enter your save name: ");
 
-        if(strcmp(actual_file_name, "unnamed")== 0){
-            printf("defaulting to a new game");
-            system("cls");
-            return 0;
-        }
-
         strcat(actual_file_name, ".bin");
 
         FILE * P_loading_save = fopen(actual_file_name, "rb");
         if(P_loading_save == NULL){
-            printf("Unable to open save...\ntry again or write 'unnamed' if you dont have one");
-            clear_screen_CONTINUE();
+            system("cls");
+            char buffer[50] = {"Cannot find your save "};
+            strcat(buffer, actual_file_name);
+            strcat(buffer, " :(\n");
+            int choice = handle_2_options(&no_save_file, buffer, print_menu, 1, 2);
+            if(choice == 1){
+                system("cls");
+                printf("defaulting to a new game");
+                clear_screen_CONTINUE();
+                return 0;
+            }
             fclose(P_loading_save);
             continue;
         }
@@ -2827,7 +2837,7 @@ int loading(){
 
         fclose(P_loading_save);
 
-        printf("succesfully loaded save %s", materials.P_name);
+        printf(GREEN "\nsuccesfully loaded save %s" RESET, materials.P_name);
 
         clear_screen_CONTINUE();
         system("cls");
