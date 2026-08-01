@@ -285,7 +285,10 @@ void iron_mine();
 void diamond_mine();
 
 
+void move_night();
+
 void plains();
+void caves();
 
 int is_death();
 
@@ -875,9 +878,7 @@ int main(){
                 break;
                 case STATE_EXPLORE_CAVES:
                     system("cls");
-                    printf("EXPLORE CAVES IS WORK IN PROGRESS\n");
-                    clear_screen_CONTINUE();
-                    encounter(double_zombie);
+                    caves();
                     materials.current_status = STATE_FIGHT;
                 break;
 
@@ -1651,6 +1652,10 @@ void diamond_mine() {
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //                   FIGTING
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+void move_night(){
+    if(materials.call_of_the_night == -4) materials.call_of_the_night = 5;
+    else materials.call_of_the_night --;
+}
 
 void plains(){
 
@@ -1669,9 +1674,31 @@ void plains(){
         else encounter(skeleton);
     }
 
-    if(materials.call_of_the_night == -4) materials.call_of_the_night = 5;
-    else materials.call_of_the_night --;
+    move_night();
 
+}
+
+void caves(){
+    int tmp_rnad_idk_tbh_anymore_what_do_i_name_these_variables_help = rand() % 4;
+
+    switch(tmp_rnad_idk_tbh_anymore_what_do_i_name_these_variables_help){
+        case 0:
+            encounter(bat);
+        break;
+
+        case 1:
+            encounter(Creeper);
+        break;
+
+        case 2:
+            encounter(double_zombie);
+        break;
+
+        case 3:
+            encounter(double_skeleton);
+        break;
+    }
+    move_night();
 }
 
 void encounter(Monster chosen_monster){
