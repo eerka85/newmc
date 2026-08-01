@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <conio.h>
 #include <time.h>
+#include <stdbool.h>
 
 #include <zlib.h>
 #include <png.h>
@@ -202,6 +203,7 @@ typedef struct {
     void (*print_monster)();
     Crafting_materials loottable;
     int emerald_drop;
+    bool double_fight;
 } Monster;
 
 typedef struct {
@@ -699,6 +701,34 @@ Monster Creeper = { //dies at monster attack
     .emerald_drop = 2
 };
 
+Monster double_zombie = {
+    .hp_mon = 16.0f,
+    .max_hp = 16.0f,
+    .running_resistance = 6,
+    .name = "Horde of Zombies",
+    .attack_dmg = 1.0f,
+    .xtra_accuracy = 1,
+    .hitting_resistance = 3,
+    .loottable = { .iron = 2 },
+    .print_monster = print_zom,
+    .emerald_drop = 4,
+    .double_fight = true
+};
+
+Monster double_skeleton = {
+    .hp_mon = 10.0f,
+    .max_hp = 10.0f,
+    .running_resistance = 7,
+    .name = "Horde of Skeletons",
+    .attack_dmg = 2.0f,
+    .xtra_accuracy = 1,
+    .hitting_resistance = 4,
+    .loottable = { .bones = 4 },
+    .print_monster = print_skel,
+    .emerald_drop = 4,
+    .double_fight = true    
+};
+
 Whole_quest quest_book[] = {
     [0] = { .name = "No Quest",              .quest_enum = QUEST_NONE,       .what_to_do = "do nothing ig?",                                                  .reward_emeralds = 0},
     [1] = { .name = "Defeat the SAMURAI",    .quest_enum = QUEST_SAMURAI,    .what_to_do = "You must defeat the SAMURAI boss (FIGHT > BOSS > SAMURAI)",       .reward_emeralds = QUEST_REWARD_FOR_BOSS},
@@ -847,7 +877,7 @@ int main(){
                     system("cls");
                     printf("EXPLORE CAVES IS WORK IN PROGRESS\n");
                     clear_screen_CONTINUE();
-                    encounter(Creeper);
+                    encounter(double_zombie);
                     materials.current_status = STATE_FIGHT;
                 break;
 
@@ -1125,6 +1155,10 @@ State D_or_I_menu_plus_craft(State where_am_i_state, What_do_i_craft_please vari
 
 Fighting_state handle_encounter_menu(Monster chosen_monster){
     chosen_monster.print_monster();
+    if(chosen_monster.double_fight){
+        printf("\n");
+        chosen_monster.print_monster();
+    }
     printf("A wild %s has appeared!\n", chosen_monster.name);
     printf(GREEN "Your HP: %.1f/%.1f    " RESET, materials.player_hp_fighting, MAX_PALYER_HP_FIGHTING);
     printf(RED "Enemy HP: %.1f/%.1f\n" RESET, chosen_monster.hp_mon, chosen_monster.max_hp);
@@ -1848,11 +1882,31 @@ void monster_attack(Monster * chosen_monster){
         }
     }
     else{
-        printf( GREEN " %s's attack didnt even hurt" RESET, chosen_monster->name);
+        printf( GREEN " %s's attack didnt even hurt\n" RESET, chosen_monster->name);
     }
 
     is_death();
 
+    if(chosen_monster->double_fight == true){
+        printf("\n %s attacks back! again...\n", chosen_monster->name);
+        int tmp = rand() %10;
+        tmp -= materials.protection_armor;
+        tmp += chosen_monster->xtra_accuracy;
+
+        if(tmp > 5){
+            materials.player_hp_fighting -= chosen_monster->attack_dmg;
+            printf( RED" Took %.1f damage from %s" RESET, chosen_monster->attack_dmg, chosen_monster->name);
+            if(strcmp(chosen_monster->name, "Creeper") == 0){
+                chosen_monster->hp_mon = 0;
+                printf( GREEN "\n The creeper dies from its explosion attack\n" RESET);
+            }
+        }
+        else{
+            printf( GREEN " %s's attack didnt even hurt" RESET, chosen_monster->name);
+        }
+
+        is_death();
+    }
 }
 
 int is_death(){
