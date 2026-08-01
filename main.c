@@ -392,7 +392,7 @@ MenuMap MAP_mine_menu[] = {
 
 Menu fighting_menu = {
     "fighting menu",
-    { {"0. BACK"}, {"1. BOSS FIGHT"}, {"2. EXPLORE (plains)"}, {"3. EXPLORE (caves)(WIP)"}},
+    { {"0. BACK"}, {"1. BOSS FIGHT"}, {"2. EXPLORE (plains)"}, {"3. EXPLORE (caves)"}},
     4,
     0 //pos
 };
