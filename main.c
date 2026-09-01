@@ -300,7 +300,7 @@ Fighting_state can_i_win(Monster chosen_mon);
 Fighting_state tameing(Monster chosen_mon);
 void calc_equipment();
 float better_armor(int d_variant, int i_variant);
-void monster_attack(Monster * chosen_monster);
+int monster_attack(Monster * chosen_monster);
 
 int dodge_TANK();
 int dmg_TANK();
@@ -1759,7 +1759,10 @@ void encounter(Monster chosen_monster){
                 system("cls");
             break;
         }
-        if(materials.current_F_state == F_STATE_LEAVE) return; 
+        if(materials.current_F_state == F_STATE_LEAVE){
+            clear_screen_CONTINUE();
+            return;
+        } 
     }
 }
 
@@ -1775,7 +1778,7 @@ Fighting_state can_i_leave(Monster * chosen_monster){
     else{
         printf(RED " XXX COULDNT ESCAPE... XXX\n" RESET);
         clear_screen_CONTINUE();
-        monster_attack(chosen_monster);
+        if(monster_attack(chosen_monster)) return F_STATE_LEAVE;
         clear_screen_CONTINUE();
         return F_STATE_MENU;
     }
@@ -1790,15 +1793,14 @@ Fighting_state can_i_attack(Monster * chosen_monster){
         chosen_monster->hp_mon -= materials.attack_dmg;
         printf(BOLD " ATTACK HIT for %.1f\n" RESET, materials.attack_dmg);
         clear_screen_CONTINUE();
-        monster_attack(chosen_monster);
-        clear_screen_CONTINUE();
     }
     else{
         printf(BOLD " ATTACK MISSED\n" RESET);
         clear_screen_CONTINUE();
-        monster_attack(chosen_monster);
-        clear_screen_CONTINUE();
     }
+
+    if(monster_attack(chosen_monster)) return F_STATE_LEAVE;
+    clear_screen_CONTINUE();
 
     clear_screen_CONTINUE();
     return F_STATE_MENU;
@@ -1875,7 +1877,7 @@ Fighting_state tameing(Monster chosen_mon){
             printf(RED " WOLF NOT TAMED. TRY AGAIN?\n CONSUMED 1 BONES\n" RESET);
             materials.bones = materials.bones -1;
             clear_screen_CONTINUE();
-            monster_attack(&chosen_mon);
+            if(monster_attack(&chosen_mon)) return F_STATE_LEAVE;
             clear_screen_CONTINUE();
             return F_STATE_MENU;  
         }   
@@ -1908,7 +1910,7 @@ float better_armor(int d_variant, int i_variant){
     return (d_variant) ? D_ARMOR_PIECE : (i_variant) ? I_ARMOR_PIECE : 0.0f;
 }
 
-void monster_attack(Monster * chosen_monster){
+int monster_attack(Monster * chosen_monster){
     printf(" %s attacks back!\n", chosen_monster->name);
     int tmp = rand() %10;
     tmp -= materials.protection_armor;
@@ -1926,7 +1928,7 @@ void monster_attack(Monster * chosen_monster){
         printf( GREEN " %s's attack didnt even hurt\n" RESET, chosen_monster->name);
     }
 
-    is_death();
+    if(is_death()) return 1;
 
     if(chosen_monster->double_fight == true){
         printf("\n %s attacks back! again...\n", chosen_monster->name);
@@ -1946,8 +1948,9 @@ void monster_attack(Monster * chosen_monster){
             printf( GREEN " %s's attack didnt even hurt" RESET, chosen_monster->name);
         }
 
-        is_death();
+        if(is_death()) return 1;
     }
+    return 0;
 }
 
 int is_death(){
@@ -2306,8 +2309,7 @@ State tank_fight(){
 
 
 	} while(PLAYER_lives > 0); //main do while cycyle end
-	materials.player_hp_fighting = 0;
-    is_death();
+	return STATE_DEATH;
 }
 
 State samurai_fight(){
