@@ -16,7 +16,7 @@
 #define MAX_PALYER_HP_FIGHTING  10.0f
 #define STATE_THAT_IM_IN_RN     999
 
-#define QUEST_REWARD_FOR_BOSS   20 //half of this is wolf
+#define QUEST_REWARD_FOR_BOSS   20 //half of this is wolf blabla
 
 #define D_SWORD_DMG    2.5f
 #define I_SWORD_DMG    2.0f

@@ -9,11 +9,11 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
-                "-o",
-                /*"-static",*/
-                "${fileDirname}/${fileBasenameNoExtension}.exe",
+                "-static",           
                 "-lpng16",
-                "-lz"
+                "-lz",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "C:/msys64/ucrt64/bin"
