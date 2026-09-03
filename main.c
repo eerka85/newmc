@@ -890,11 +890,13 @@ int main(){
                     system("cls");
                     plains();
                     materials.current_status = STATE_FIGHT;
+                    if(materials.player_hp_fighting <= 0) materials.current_status = STATE_DEATH;
                 break;
                 case STATE_EXPLORE_CAVES:
                     system("cls");
                     caves();
                     materials.current_status = STATE_FIGHT;
+                    if(materials.player_hp_fighting <= 0) materials.current_status = STATE_DEATH;
                 break;
 
             //   INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY      INVENTORY   
