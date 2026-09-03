@@ -2738,7 +2738,6 @@ State dice_game(){
 				printf(RED "\n You rolled %d," RESET, p_dice_roll);
 				if(p_dice_roll > villager_dice_roll){
                     clear_screen_CONTINUE();
-                    buffer[100];
 					sprintf(buffer, "\n yay YOU WON yay\n Adding %d emerald/s...\n", eme_bet *2);
 					materials.emeralds += eme_bet *2;
 
@@ -2748,9 +2747,8 @@ State dice_game(){
 				}
 				else if(villager_dice_roll == p_dice_roll){
                     clear_screen_CONTINUE();
-                    buffer[100];
 					sprintf(buffer, "\n Draw...\n Giving back %d emerald/s...\n", eme_bet);
-					materials.player_hp_fighting += eme_bet;
+					materials.emeralds += eme_bet;
 
 					choice_leave = handle_2_options(&whanna_continue, buffer, print_menu, 1, 2);
                     if(choice_leave == 2) return STATE_BASE;
